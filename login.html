@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BP Dashboard - 飞书登录</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 48px 40px;
+      width: 400px;
+      max-width: 90vw;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+      text-align: center;
+    }
+
+    .logo {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #3370ff 0%, #245bdb 100%);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      font-size: 28px;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    h1 {
+      font-size: 22px;
+      color: #1f2937;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 32px;
+    }
+
+    .btn-feishu {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 14px 24px;
+      background: #3370ff;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      text-decoration: none;
+    }
+
+    .btn-feishu:hover {
+      background: #245bdb;
+      transform: translateY(-1px);
+    }
+
+    .btn-feishu:active {
+      transform: translateY(0);
+    }
+
+    .btn-feishu svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .status {
+      margin-top: 24px;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+
+    .error {
+      margin-top: 16px;
+      padding: 12px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      color: #dc2626;
+      font-size: 13px;
+      display: none;
+    }
+
+    .error.show { display: block; }
+
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">BP</div>
+    <h1>BP Dashboard</h1>
+    <p class="subtitle">请使用飞书账号登录</p>
+
+    <a id="loginBtn" class="btn-feishu" href="#">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15l-4-4 1.41-1.41L11 14.17l5.59-5.59L18 10l-7 7z"/>
+      </svg>
+      飞书登录
+    </a>
+
+    <p class="status" id="statusMsg"></p>
+    <div class="error" id="errorMsg"></div>
+  </div>
+
+  <script>
+    (function () {
+      const API_BASE = 'https://silent-stars-itch.loca.lt';
+
+      const statusMsg = document.getElementById('statusMsg');
+      const errorMsg = document.getElementById('errorMsg');
+      const loginBtn = document.getElementById('loginBtn');
+
+      function showError(msg) {
+        errorMsg.textContent = msg;
+        errorMsg.classList.add('show');
+      }
+
+      function hideError() {
+        errorMsg.classList.remove('show');
+      }
+
+      // 页面默认跳转：根据 pages 列表选第一个非 summary 的区域页
+      function getDefaultPage(pages) {
+        if (!pages || pages.length === 0) {
+          alert('您的账号暂无任何页面访问权限，请联系管理员。');
+          return null;
+        }
+        // 优先跳转 dashboard 或 汇总面板
+        if (pages.includes('dashboard')) return 'dashboard.html';
+        if (pages.includes('summary')) return 'summary.html';
+        // 第一个区域页面
+        return pages[0] + '.html';
+      }
+
+      // 已登录 → 根据 role 跳转
+      async function checkLogin() {
+        const token = localStorage.getItem('bp_token');
+        if (!token) return false;
+
+        statusMsg.textContent = '检测到登录状态，正在验证...';
+
+        try {
+          const res = await fetch(API_BASE + '/api/auth/me', {
+            headers: { Authorization: 'Bearer ' + token },
+          });
+
+          if (!res.ok) {
+            // token 过期
+            localStorage.removeItem('bp_token');
+            return false;
+          }
+
+          const user = await res.json();
+          // 保存用户信息供各页使用
+          localStorage.setItem('bp_user', JSON.stringify(user));
+
+          const target = getDefaultPage(user.pages);
+          if (target) {
+            window.location.replace(target);
+          }
+          return true;
+        } catch (err) {
+          // 网络错误 — 后端不可达时仍用本地缓存的 token
+          console.warn('后端不可达，使用缓存 token:', err.message);
+          const cachedUser = localStorage.getItem('bp_user');
+          if (cachedUser) {
+            try {
+              const user = JSON.parse(cachedUser);
+              const target = getDefaultPage(user.pages);
+              if (target) window.location.replace(target);
+            } catch (_) {
+              // 缓存损坏, 继续显示登录页
+              return false;
+            }
+          }
+          return false;
+        }
+      }
+
+      // 处理飞书回调 — URL 中有 ?token=xxx
+      function handleCallback() {
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+
+        if (!token) return false;
+
+        // 保存 token
+        localStorage.setItem('bp_token', token);
+
+        // 验证并跳转
+        fetch(API_BASE + '/api/auth/me', {
+          headers: { Authorization: 'Bearer ' + token },
+        })
+          .then(res => res.json())
+          .then(user => {
+            localStorage.setItem('bp_user', JSON.stringify(user));
+            const target = getDefaultPage(user.pages);
+            if (target) window.location.replace(target);
+          })
+          .catch(err => {
+            showError('验证登录状态失败: ' + err.message);
+          });
+
+        return true;
+      }
+
+      // 点击登录按钮
+      loginBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        hideError();
+        statusMsg.textContent = '正在跳转飞书授权...';
+        window.location.href = API_BASE + '/api/auth/feishu';
+      });
+
+      // 入口
+      if (handleCallback()) {
+        // callback 模式 — 不继续往下
+      } else {
+        checkLogin().then(loggedIn => {
+          if (!loggedIn) {
+            statusMsg.textContent = '';
+          }
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

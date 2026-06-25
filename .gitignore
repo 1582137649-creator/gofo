@@ -1,0 +1,4 @@
+server/
+server/.env
+.workbuddy/
+node_modules/
