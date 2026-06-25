@@ -4,12 +4,17 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 
-// Load permissions config
+// Load permissions config (with fallback for serverless)
 let permissions = null;
 function getPermissions() {
   if (!permissions) {
-    const permPath = path.join(process.cwd(), 'permissions.json');
-    permissions = JSON.parse(fs.readFileSync(permPath, 'utf-8'));
+    try {
+      const permPath = path.join(process.cwd(), 'permissions.json');
+      permissions = JSON.parse(fs.readFileSync(permPath, 'utf-8'));
+    } catch (e) {
+      console.warn('permissions.json not found, using empty defaults');
+      permissions = { admin_open_ids: [], region_permissions: {} };
+    }
   }
   return permissions;
 }
