@@ -8,5 +8,8 @@
   },
   "dependencies": {
     "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "vercel": "^54.0.0"
   }
 }
