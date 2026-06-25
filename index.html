@@ -328,7 +328,7 @@ function showDashboard() {
   document.getElementById('loginOverlay').style.display = 'none';
   document.getElementById('appContent').style.display = '';
   document.getElementById('userName').textContent = USER.name || USER.open_id;
-  document.getElementById('userRole').textContent = USER.role === 'admin' ? '管理员' : '区域BP';
+  document.getElementById('userRole').textContent = USER.role === 'admin' ? '管理员' : (USER.role === 'region_bp' ? '区域BP' : '游客');
 
   // Render region buttons based on permissions
   renderRegionButtons();

@@ -44,7 +44,7 @@ function getAppAccessToken() {
         resp.on('data', (chunk) => (body += chunk));
         resp.on('end', () => {
           const data = JSON.parse(body);
-          if (data.code !== 0) return reject(new Error(`Feishu token error: ${data.msg}`));
+          if (data.code !== 0) return reject(new Error(`Feishu token error: ${data.msg || data.message}`));
           appAccessToken = data.app_access_token;
           appTokenExpiresAt = Date.now() + data.expire * 1000;
           resolve(appAccessToken);
@@ -72,7 +72,7 @@ function getFeishuUserInfo(userAccessToken) {
         resp.on('data', (chunk) => (body += chunk));
         resp.on('end', () => {
           const data = JSON.parse(body);
-          if (data.code !== 0) return reject(new Error(`Feishu user info error: ${data.msg}`));
+          if (data.code !== 0) return reject(new Error(`Feishu user info error: ${data.msg || data.message}`));
           resolve(data.data);
         });
       }
@@ -160,7 +160,7 @@ module.exports = async (req, res) => {
           resp.on('data', (c) => (b += c));
           resp.on('end', () => {
             const d = JSON.parse(b);
-            if (d.code !== 0) return reject(new Error(`Token exchange error: ${d.msg}`));
+            if (d.code !== 0) return reject(new Error(`Token exchange error: ${d.msg || d.message}`));
             resolve(d.data);
           });
         }
@@ -191,16 +191,15 @@ module.exports = async (req, res) => {
     const jwtExpiresIn = parseInt(process.env.JWT_EXPIRES_IN || '604800', 10);
     const token = jwt.sign(jwtPayload, jwtSecret, { expiresIn: jwtExpiresIn });
 
-    // Step 5: Redirect back to frontend with JWT
-    const frontendUrl = process.env.FRONTEND_URL;
+    // Step 5: Redirect back to frontend with JWT (relative path, avoids env var issues)
     const isProd = process.env.VERCEL_ENV === 'production';
 
     // Clear state cookie
     res.setHeader('Set-Cookie', `oauth_state=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0; ${isProd ? 'Secure;' : ''}`);
 
-    // Redirect with token in URL fragment (safer for GitHub Pages)
+    // Redirect to root with JWT in hash (stays on same domain)
     res.writeHead(302, {
-      Location: `${frontendUrl}#token=${token}`,
+      Location: `/#token=${token}`,
     });
     res.end();
   } catch (err) {
