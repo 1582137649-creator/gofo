@@ -1,4 +1,6 @@
-server/
-server/.env
 .workbuddy/
 node_modules/
+server/
+.env
+.DS_Store
+*.log

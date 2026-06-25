@@ -1,0 +1,12 @@
+{
+  "name": "bp-dashboard",
+  "version": "2.0.0",
+  "description": "BP Dashboard — 飞书SSO + 区域权限 + Vercel + Supabase",
+  "private": true,
+  "scripts": {
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2"
+  }
+}

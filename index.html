@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>美区劳务付款汇总看板</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, "Microsoft YaHei", "Segoe UI", sans-serif;
+  background: #f4f6f9; color: #1a1a2e; min-width: 900px;
+}
+.header {
+  padding: 20px 30px; background: #fff; border-bottom: 1px solid #e2e8f0;
+  display: flex; flex-direction: column; align-items: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.header h1 { font-size: 22px; font-weight: 700; color: #1a1a2e; text-align: center; }
+.header .update-time { color: #94a3b8; font-size: 13px; }
+.filter-bar {
+  padding: 14px 30px; background: #fff; display: flex; gap: 10px;
+  align-items: center; justify-content: center; flex-wrap: wrap;
+  border-bottom: 1px solid #e2e8f0; position: relative;
+}
+.filter-bar label { color: #64748b; font-size: 13px; font-weight: 500; }
+.period-wrap {
+  position: absolute; right: 30px; top: 50%; transform: translateY(-50%);
+  display: flex; align-items: center; gap: 6px;
+}
+.region-btn {
+  padding: 6px 18px; border: 2px solid #cbd5e1; border-radius: 20px;
+  background: #f1f5f9; color: #475569; cursor: pointer; font-size: 13px;
+  font-weight: 500; transition: all 0.2s;
+}
+.region-btn.all-btn       { background:#95A5A6; color:#fff; border-color:#95A5A6; opacity:0.65; }
+.region-btn.all-btn:hover,
+.region-btn.all-btn.active { opacity:1.0; box-shadow:0 2px 8px rgba(0,0,0,0.18); }
+.region-btn[data-region="MS中南大区"]       { background:#E74C3C; color:#fff; border-color:#E74C3C; opacity:0.65; }
+.region-btn[data-region="MS中南大区"]:hover,
+.region-btn[data-region="MS中南大区"].active { opacity:1.0; box-shadow:0 2px 8px rgba(231,76,60,0.45); }
+.region-btn[data-region="WE美西大区"]       { background:#3498DB; color:#fff; border-color:#3498DB; opacity:0.65; }
+.region-btn[data-region="WE美西大区"]:hover,
+.region-btn[data-region="WE美西大区"].active { opacity:1.0; box-shadow:0 2px 8px rgba(52,152,219,0.45); }
+.region-btn[data-region="TX德州大区"]        { background:#F39C12; color:#fff; border-color:#F39C12; opacity:0.65; }
+.region-btn[data-region="TX德州大区"]:hover,
+.region-btn[data-region="TX德州大区"].active  { opacity:1.0; box-shadow:0 2px 8px rgba(243,156,18,0.45); }
+.region-btn[data-region="NE东北大区"]       { background:#2ECC71; color:#fff; border-color:#2ECC71; opacity:0.65; }
+.region-btn[data-region="NE东北大区"]:hover,
+.region-btn[data-region="NE东北大区"].active { opacity:1.0; box-shadow:0 2px 8px rgba(46,204,113,0.45); }
+.region-btn[data-region="GL大湖大区"]       { background:#9B59B6; color:#fff; border-color:#9B59B6; opacity:0.65; }
+.region-btn[data-region="GL大湖大区"]:hover,
+.region-btn[data-region="GL大湖大区"].active { opacity:1.0; box-shadow:0 2px 8px rgba(155,89,182,0.45); }
+.region-btn[data-region="Ground项目部"]       { background:#1ABC9C; color:#fff; border-color:#1ABC9C; opacity:0.65; }
+.region-btn[data-region="Ground项目部"]:hover,
+.region-btn[data-region="Ground项目部"].active { opacity:1.0; box-shadow:0 2px 8px rgba(26,188,156,0.45); }
+.region-btn:not(.active):hover { opacity:0.85; }
+.period-select {
+  padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px;
+  background: #fff; color: #334155; font-size: 13px; margin-left: auto;
+}
+.kpi-row { display:flex; gap:16px; padding:20px 30px; flex-wrap:wrap; }
+.kpi-row.grid-2x4 { display: grid; grid-template-columns: repeat(4, 1fr); }
+.kpi-card {
+  flex:1; min-width:180px; background:#fff; border-radius:12px;
+  padding:18px 22px; border:1px solid #e2e8f0; position:relative;
+  overflow:hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  transition: box-shadow 0.2s;
+}
+.kpi-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.kpi-label { font-size:13px; color:#94a3b8; margin-bottom:8px; font-weight:500; }
+.kpi-value { font-size:26px; font-weight:700; color:#1a1a2e; }
+.kpi-mom { font-size:12px; margin-top:8px; font-weight:500; }
+.kpi-mom.up { color:#E74C3C; }
+.kpi-mom.down { color:#2ECC71; }
+.info-bar {
+  background: #f5f7fa; border-radius: 8px; padding: 10px 20px;
+  margin: 18px 30px 0; font-size: 14px; color: #333;
+  display: flex; align-items: center; justify-content: space-around;
+  flex-wrap: wrap; gap: 8px 16px;
+}
+.info-bar .info-period { font-weight: 700; color: #2980B9; white-space: nowrap; }
+.info-bar .info-sep { color: #ccc; }
+.info-bar .info-val { font-weight: 600; color: #1a1a2e; }
+.charts-grid {
+  display:grid; grid-template-columns: 1fr 1fr; gap:18px; padding:0 30px 20px;
+}
+.chart-card {
+  background:#fff; border-radius:12px; padding:20px;
+  border:1px solid #e2e8f0; box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+.chart-card.full-width { grid-column:1/-1; }
+.chart-card h3 { font-size:15px; font-weight:600; margin-bottom:16px; color:#334155; }
+.chart-wrap { position:relative; height:280px; }
+.chart-wrap.tall { height:320px; }
+.table-section { padding:0 30px 30px; }
+.table-card {
+  background:#fff; border-radius:12px; padding:20px;
+  border:1px solid #e2e8f0; box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+.table-card h3 { font-size:15px; font-weight:600; margin-bottom:14px; color:#334155; }
+.export-btn {
+  padding:7px 18px; background:#3498DB; color:#fff; border:none;
+  border-radius:6px; cursor:pointer; font-size:13px; font-weight:500;
+  float:right; margin-bottom:12px; transition: background 0.2s;
+}
+.export-btn:hover { background:#2980B9; }
+.table-wrap { overflow-x:auto; max-height:420px; overflow-y:auto; clear:both; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th {
+  background:#f8fafc; color:#64748b; padding:10px 14px; text-align:left;
+  position:sticky; top:0; z-index:1; border-bottom:2px solid #e2e8f0;
+  font-weight:600; white-space:nowrap;
+}
+td { padding:9px 14px; border-bottom:1px solid #f1f5f9; color:#334155; }
+tr:hover td { background:#f8fafc; }
+.text-right { text-align:right; }
+.hidden { display:none!important; }
+@media (max-width:1100px) { .charts-grid { grid-template-columns:1fr; } }
+
+/* Login overlay */
+.login-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex; align-items: center; justify-content: center;
+}
+.login-box {
+  background: #fff; border-radius: 16px; padding: 40px 36px;
+  width: 400px; max-width: 92vw; box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  text-align: center;
+}
+.login-box h2 { font-size: 22px; color: #1a1a2e; margin-bottom: 6px; }
+.login-sub { font-size: 14px; color: #94a3b8; margin-bottom: 28px; }
+.login-btn-feishu {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 14px;
+  background: linear-gradient(135deg, #3370ff 0%, #245bdb 100%);
+  color: #fff; border: none; border-radius: 8px; font-size: 16px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; margin-bottom: 16px;
+}
+.login-btn-feishu:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(51,112,255,0.4); }
+.login-btn-feishu:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.login-feishu-icon { width: 24px; height: 24px; }
+.login-error { color: #E74C3C; font-size: 13px; margin-top: 12px; min-height: 20px; }
+.login-loading { display: inline-block; width: 16px; height: 16px; border: 2px solid #fff; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 6px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* User bar */
+.user-bar {
+  display: flex; align-items: center; justify-content: flex-end; gap: 12px;
+  padding: 8px 30px; background: #fff; border-bottom: 1px solid #e2e8f0;
+  font-size: 13px; color: #64748b;
+}
+.user-bar .user-name { font-weight: 600; color: #334155; }
+.user-bar .user-role { color: #94a3b8; }
+.logout-btn {
+  padding: 4px 14px; background: #ef4444; color: #fff;
+  border: none; border-radius: 6px; font-size: 12px; cursor: pointer;
+  transition: opacity 0.2s;
+}
+.logout-btn:hover { opacity: 0.85; }
+</style>
+</head>
+<body>
+
+<!-- Login overlay -->
+<div id="loginOverlay" class="login-overlay">
+  <div class="login-box">
+    <h2>美区劳务付款看板</h2>
+    <p class="login-sub">请使用飞书账号登录</p>
+    <button class="login-btn-feishu" id="loginBtn" onclick="handleLogin()">
+      <svg class="login-feishu-icon" viewBox="0 0 24 24" fill="white"><rect x="2" y="2" width="20" height="20" rx="4"/><text x="12" y="17" text-anchor="middle" font-size="14" font-weight="bold" fill="#3370ff">L</text></svg>
+      飞书账号登录
+    </button>
+    <div id="loginError" class="login-error"></div>
+  </div>
+</div>
+
+<!-- Main app -->
+<div id="appContent" style="display:none;">
+  <div class="user-bar">
+    <span class="user-role" id="userRole"></span>
+    <span class="user-name" id="userName"></span>
+    <button class="logout-btn" onclick="handleLogout()">退出登录</button>
+  </div>
+  <div class="header">
+    <h1>美区各大区劳务付款汇总看板</h1>
+    <span class="update-time" id="updateTime"></span>
+  </div>
+  <div class="filter-bar">
+    <label>大区：</label>
+    <div id="regionBtns"></div>
+    <span class="period-wrap">
+      <label>周期：</label>
+      <select class="period-select" id="periodFilter" onchange="refreshAll()"><option value="all">全部</option></select>
+    </span>
+  </div>
+  <div class="kpi-row grid-2x4" id="kpiRow"></div>
+  <div class="info-bar" id="infoBar" style="display:none;"></div>
+  <div class="charts-grid">
+    <div class="chart-card full-width">
+      <h3>月度趋势</h3>
+      <div class="chart-wrap tall"><canvas id="chartTrend"></canvas></div>
+    </div>
+    <div class="chart-card" id="cardRegionCompare">
+      <h3 id="titleRegionCompare">大区对比</h3>
+      <div class="chart-wrap"><canvas id="chartRegionCompare"></canvas></div>
+    </div>
+    <div class="chart-card" id="cardRegionPie">
+      <h3 id="titleRegionPie">大区成本占比</h3>
+      <div class="chart-wrap"><canvas id="chartRegionPie"></canvas></div>
+    </div>
+    <div class="chart-card full-width">
+      <h3>劳务公司付款排名 TOP15</h3>
+      <div class="chart-wrap tall"><canvas id="chartVendorRank"></canvas></div>
+    </div>
+    <div class="chart-card full-width">
+      <h3>劳务性价比散点图</h3>
+      <div class="chart-wrap tall"><canvas id="chartScatter"></canvas></div>
+      <div id="scatter-tip" style="margin-top:12px;padding:14px 18px;background:#f8fafc;border-radius:8px;font-size:13px;line-height:1.8;color:#334155;"></div>
+    </div>
+    <div class="chart-card full-width" id="cardGround">
+      <h3>Ground 项目部 - 四级组织拆解</h3>
+      <div class="chart-wrap"><canvas id="chartGround"></canvas></div>
+    </div>
+  </div>
+  <div class="table-section">
+    <div class="table-card">
+      <button class="export-btn" onclick="exportCSV()">导出 CSV</button>
+      <h3>劳务周期付款明细表</h3>
+      <div class="table-wrap">
+        <table id="detailTable"><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table>
+      </div>
+      <div style="text-align:right;margin-top:8px;font-size:12px;color:#94a3b8;">汇率：1 USD = 6.79 CNY（2026-06-25）</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ==================== CONFIG ====================
+const SUPABASE_URL = 'https://fgibhpggdmimxjknqqah.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_7UouyWr5_y64QwrVd8qFig_8H3H0jt5';
+const API_BASE = window.location.origin;
+const EXCHANGE_RATE = 6.79;
+
+const REGION_COLORS = {
+  "all": "#E67E22", "MS中南大区": "#E74C3C", "WE美西大区": "#3498DB",
+  "TX德州大区": "#F39C12", "NE东北大区": "#2ECC71", "GL大湖大区": "#9B59B6",
+  "Ground项目部": "#1ABC9C"
+};
+const REGION_NAMES = ["MS中南大区", "WE美西大区", "TX德州大区", "NE东北大区", "GL大湖大区", "Ground项目部"];
+
+// ==================== STATE ====================
+let supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let USER = null;
+let PERIODS = [];
+let RECORDS = [];
+let currentRegion = 'all';
+let currentPeriod = 'all';
+let charts = {};
+
+// ==================== FEISHU SSO AUTH ====================
+async function handleLogin() {
+  const btn = document.getElementById('loginBtn');
+  const errEl = document.getElementById('loginError');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="login-loading"></span>跳转中...';
+  errEl.textContent = '';
+  window.location.href = API_BASE + '/api/auth/feishu';
+}
+
+async function handleLogout() {
+  localStorage.removeItem('bp_jwt_token');
+  window.location.reload();
+}
+
+async function verifyToken(token) {
+  try {
+    const res = await fetch(API_BASE + '/api/auth/me', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.authenticated ? data.user : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+// ==================== INIT ====================
+window.addEventListener('DOMContentLoaded', async function() {
+  // Check if token is in URL hash (from OAuth callback)
+  let token = null;
+  const hash = window.location.hash;
+  const hashMatch = hash.match(/token=([^&]+)/);
+  if (hashMatch) {
+    token = hashMatch[1];
+    // Clean URL
+    history.replaceState(null, '', window.location.pathname);
+  }
+  if (!token) {
+    token = localStorage.getItem('bp_jwt_token');
+  }
+
+  if (token) {
+    const user = await verifyToken(token);
+    if (user) {
+      USER = user;
+      localStorage.setItem('bp_jwt_token', token);
+      showDashboard();
+    } else {
+      localStorage.removeItem('bp_jwt_token');
+      showLogin();
+    }
+  } else {
+    showLogin();
+  }
+});
+
+function showLogin() {
+  document.getElementById('loginOverlay').style.display = '';
+  document.getElementById('appContent').style.display = 'none';
+}
+
+function showDashboard() {
+  document.getElementById('loginOverlay').style.display = 'none';
+  document.getElementById('appContent').style.display = '';
+  document.getElementById('userName').textContent = USER.name || USER.open_id;
+  document.getElementById('userRole').textContent = USER.role === 'admin' ? '管理员' : '区域BP';
+
+  // Render region buttons based on permissions
+  renderRegionButtons();
+  loadData();
+}
+
+function renderRegionButtons() {
+  const container = document.getElementById('regionBtns');
+  container.innerHTML = '';
+
+  const allowedRegions = USER.role === 'admin' ? ['all'].concat(REGION_NAMES) : ['all'].concat(USER.regions || []);
+
+  allowedRegions.forEach(function(region) {
+    const btn = document.createElement('button');
+    btn.className = 'region-btn' + (region === 'all' ? ' all-btn' : '');
+    btn.dataset.region = region;
+    btn.textContent = region === 'all' ? '全部' : region;
+    btn.onclick = function() { selectRegion(region); };
+    if (region === 'all') btn.classList.add('active');
+    container.appendChild(btn);
+  });
+}
+
+// ==================== DATA LOADING ====================
+async function loadData() {
+  let result = await supabase.from('dashboard_data').select('*');
+  if (result.error) {
+    alert('数据加载失败：' + result.error.message);
+    return;
+  }
+  RECORDS = result.data || [];
+
+  // Derive PERIODS
+  var periodsSet = {};
+  RECORDS.forEach(function(r) { periodsSet[r.period] = true; });
+  PERIODS = Object.keys(periodsSet).sort();
+
+  // Populate period filter
+  var sel = document.getElementById('periodFilter');
+  while (sel.options.length > 1) sel.remove(1);
+  PERIODS.forEach(function(p) {
+    var opt = document.createElement('option');
+    opt.value = p; opt.textContent = p; sel.appendChild(opt);
+  });
+
+  currentRegion = 'all';
+  refreshAll();
+}
+
+// ==================== HELPERS ====================
+function fmtMoney(v) {
+  if (Math.abs(v) >= 10000) return '$' + (v / 10000).toFixed(1) + '万';
+  return '$' + v.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+}
+function fmtHours(v) {
+  if (Math.abs(v) >= 10000) return (v / 10000).toFixed(1) + '万';
+  return v.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+}
+function fmtCNY(v) {
+  if (Math.abs(v) >= 10000) return '¥' + (v / 10000).toFixed(1) + '万';
+  return '¥' + v.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+}
+function fmtLabel(v) {
+  if (v === null || v === undefined) return '';
+  var n = Number(v);
+  if (n >= 10000) return (n/10000).toFixed(1) + '万';
+  return n.toLocaleString('en-US', {maximumFractionDigits:0});
+}
+function getCtx(id) {
+  var el = document.getElementById(id);
+  return el ? el.getContext('2d') : null;
+}
+function destroyChart(key) {
+  if (charts[key]) { charts[key].destroy(); delete charts[key]; }
+}
+
+// Filter records by current selection
+function filtered() {
+  var recs = RECORDS;
+  if (currentRegion !== 'all') recs = recs.filter(function(r) { return r.region === currentRegion; });
+  if (currentPeriod !== 'all') recs = recs.filter(function(r) { return r.period === currentPeriod; });
+  return recs;
+}
+function filteredLatest() {
+  var latest = PERIODS[PERIODS.length-1];
+  var recs = RECORDS.filter(function(r) { return r.period === latest; });
+  if (currentRegion !== 'all') recs = recs.filter(function(r) { return r.region === currentRegion; });
+  return recs;
+}
+
+function selectRegion(region) {
+  currentRegion = region;
+  document.querySelectorAll('.region-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.region === region);
+  });
+  refreshAll();
+}
+
+function refreshAll() {
+  currentPeriod = document.getElementById('periodFilter').value;
+  renderKPI();
+  renderTrend();
+  renderRegionCompare();
+  renderRegionPie();
+  renderVendorRank();
+  renderScatter();
+  renderGround();
+  renderTable();
+  document.getElementById('updateTime').textContent = '数据截至：' + PERIODS[PERIODS.length-1];
+}
+
+// ==================== KPI ====================
+function computeKPI(recs) {
+  var vendors = {};
+  var payment = 0, hours = 0;
+  recs.forEach(function(r) { vendors[r.vendor] = true; payment += r.payment; hours += r.hours; });
+  var vlen = Object.keys(vendors).length;
+  return {
+    companies: vlen,
+    payment: Math.round(payment*100)/100,
+    hours: Math.round(hours*100)/100,
+    avgCost: vlen ? Math.round(payment/vlen*100)/100 : 0,
+    avgHours: vlen ? Math.round(hours/vlen*100)/100 : 0
+  };
+}
+
+function renderKPI() {
+  var recs = filtered();
+  var latestRecs = filteredLatest();
+  var kr = computeKPI(recs);
+  var lk = computeKPI(latestRecs);
+  var latestCNY = Math.round(lk.payment * EXCHANGE_RATE * 100) / 100;
+  var accent = REGION_COLORS[currentRegion] || '#95A5A6';
+
+  // MoM for latest period
+  var momPayment = null, momHours = null;
+  if (PERIODS.length >= 2) {
+    var curP = PERIODS[PERIODS.length-1], preP = PERIODS[PERIODS.length-2];
+    var curR = RECORDS.filter(function(r) { return r.period===curP && (currentRegion==='all'||r.region===currentRegion); });
+    var preR = RECORDS.filter(function(r) { return r.period===preP && (currentRegion==='all'||r.region===currentRegion); });
+    var cp = curR.reduce(function(s,r) { return s+r.payment; },0);
+    var pp = preR.reduce(function(s,r) { return s+r.payment; },0);
+    var ch = curR.reduce(function(s,r) { return s+r.hours; },0);
+    var ph = preR.reduce(function(s,r) { return s+r.hours; },0);
+    if (pp) momPayment = Math.round((cp-pp)/pp*1000)/10;
+    if (ph) momHours = Math.round((ch-ph)/ph*1000)/10;
+  }
+
+  var cards = [
+    { label:'累计合作劳务数', value: lk.companies, unit:'家', color:'#95A5A6' },
+    { label:'累计付款总额 (USD)', value: kr.payment, unit:'USD', fmt:'money', mom:momPayment, color:'#E74C3C' },
+    { label:'累计付款总额 (CNY)', value: Math.round(kr.payment*EXCHANGE_RATE*100)/100, unit:'CNY', fmt:'cny', color:'#E67E22', rate:'汇率：1 USD = 6.79 CNY（2026-06-25）' },
+    { label:'最新周期付款(CNY)', value: latestCNY, unit:'CNY', fmt:'cny', color:'#E67E22' },
+    { label:'累计总工时', value: kr.hours, unit:'h', fmt:'hours', color:'#3498DB', mom:momHours },
+    { label:'最新周期工时', value: lk.hours, unit:'h', fmt:'hours', color:'#3498DB' },
+    { label:'劳务平均周期成本', value: kr.avgCost, unit:'USD', fmt:'money', color:'#F39C12' },
+    { label:'劳务平均周期工时', value: kr.avgHours, unit:'h', fmt:'hours', color:'#2ECC71' }
+  ];
+
+  var html = '';
+  cards.forEach(function(c) {
+    var display = c.value;
+    if (c.fmt === 'money') display = fmtMoney(c.value);
+    else if (c.fmt === 'cny') display = fmtCNY(c.value);
+    else if (c.fmt === 'hours') display = fmtHours(c.value) + ' h';
+    else if (c.unit === '家') display = c.value + '家';
+
+    var momHtml = c.mom !== null && c.mom !== undefined ? '<div class="kpi-mom ' + (c.mom>=0?'up':'down') + '">较上周期 ' + (c.mom>=0?'↑':'↓') + Math.abs(c.mom) + '%</div>' : '';
+    var rateHtml = c.rate ? '<div style="font-size:11px;color:#888;margin-top:4px;">' + c.rate + '</div>' : '';
+    html += '<div class="kpi-card" style="border-left:4px solid ' + accent + ';"><div class="kpi-label">' + c.label + '</div><div class="kpi-value" style="color:' + accent + '">' + display + '</div>' + momHtml + rateHtml + '</div>';
+  });
+  document.getElementById('kpiRow').innerHTML = html;
+
+  // Info bar (all mode only)
+  var ib = document.getElementById('infoBar');
+  if (currentRegion === 'all') {
+    ib.style.display = '';
+    ib.innerHTML = '<span class="info-period">最新周期：' + PERIODS[PERIODS.length-1] + '</span><span class="info-sep">|</span>劳务数 <span class="info-val">' + lk.companies + '家</span><span class="info-sep">|</span>付款总额 <span class="info-val">' + fmtMoney(lk.payment) + '</span><span class="info-sep">|</span>总工时 <span class="info-val">' + fmtHours(lk.hours) + ' h</span><span class="info-sep">|</span>平均成本 <span class="info-val">' + fmtMoney(lk.avgCost) + '</span>';
+  } else {
+    ib.style.display = 'none';
+  }
+}
+
+// ==================== CHARTS ====================
+function renderTrend() {
+  destroyChart('trend');
+  var ctx = getCtx('chartTrend'); if (!ctx) return;
+  var accent = REGION_COLORS[currentRegion] || '#3498DB';
+
+  var payments = PERIODS.map(function(p) {
+    var r = RECORDS.filter(function(x) { return x.period===p && (currentRegion==='all'||x.region===currentRegion); });
+    return Math.round(r.reduce(function(s,x) { return s+x.payment; },0)*100)/100;
+  });
+  var hours = PERIODS.map(function(p) {
+    var r = RECORDS.filter(function(x) { return x.period===p && (currentRegion==='all'||x.region===currentRegion); });
+    return Math.round(r.reduce(function(s,x) { return s+x.hours; },0)*100)/100;
+  });
+  var vendors = PERIODS.map(function(p) {
+    var r = RECORDS.filter(function(x) { return x.period===p && (currentRegion==='all'||x.region===currentRegion); });
+    var set = {}; r.forEach(function(x) { set[x.vendor] = true; }); return Object.keys(set).length;
+  });
+
+  charts.trend = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: PERIODS,
+      datasets: [
+        { label:'付款总额(USD)', data:payments, backgroundColor:accent+'33', borderColor:accent, borderWidth:2, yAxisID:'y', order:2 },
+        { label:'总工时 (h)', data:hours, type:'line', borderColor:'#F39C12', backgroundColor:'#F39C1233', fill:false, yAxisID:'y1', order:1, tension:0.3 },
+        { label:'劳务公司数', data:vendors, type:'line', borderColor:'#2ECC71', backgroundColor:'#2ECC7133', fill:false, yAxisID:'y1', order:0, tension:0.3 }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend: { position:'top', labels:{usePointStyle:true, padding:16, font:{size:12}} },
+        tooltip: { callbacks: { label: function(c) { if(c.dataset.label.includes('付款')) return ['$'+c.raw.toLocaleString(), '≈ ¥'+Math.round(c.raw*EXCHANGE_RATE).toLocaleString()]; if(c.dataset.label.includes('工时')) return c.raw.toLocaleString()+'h'; return c.raw+'家'; } } },
+        datalabels: {
+          anchor:'end', align:'top', offset:4, font:{weight:'bold',size:11},
+          color: function(c) { return c.dataset.label.includes('公司') ? 'transparent' : (c.dataset.borderColor||'#333'); },
+          formatter: function(v,c) { if(c.dataset.label.includes('公司')) return ''; return c.dataset.data.length>10&&c.dataIndex%2!==0 ? '' : fmtLabel(v); }
+        }
+      },
+      scales: {
+        y: { type:'linear', position:'left', title:{display:true,text:'付款金额(USD)'}, grid:{color:'#f0f0f0'} },
+        y1: { type:'linear', position:'right', title:{display:true,text:'工时 / 公司数'}, grid:{drawOnChartArea:false} },
+        x: { grid:{color:'#f0f0f0'} }
+      }
+    }
+  });
+}
+
+function renderRegionCompare() {
+  destroyChart('regionCompare');
+  var ctx = getCtx('chartRegionCompare'); if (!ctx) return;
+  var title = document.getElementById('titleRegionCompare');
+
+  if (currentRegion === 'all') {
+    title.textContent = '大区对比（最新周期：' + PERIODS[PERIODS.length-1] + '）';
+    var l = PERIODS[PERIODS.length-1];
+    var regions = REGION_NAMES.filter(function(r) { return RECORDS.some(function(x) { return x.region===r&&(currentPeriod==='all'||x.period===currentPeriod); }); });
+    var pmts = regions.map(function(r) {
+      var rr = RECORDS.filter(function(x) { return x.region===r&&(currentPeriod==='all'||x.period===l); });
+      return Math.round(rr.reduce(function(s,x) { return s+x.payment; },0)*100)/100;
+    });
+    var hrs = regions.map(function(r) {
+      var rr = RECORDS.filter(function(x) { return x.region===r&&(currentPeriod==='all'||x.period===l); });
+      return Math.round(rr.reduce(function(s,x) { return s+x.hours; },0)*100)/100;
+    });
+
+    charts.regionCompare = new Chart(ctx, {
+      type:'bar', data:{ labels:regions, datasets:[
+        { label:'付款总额(USD)', data:pmts, backgroundColor:regions.map(function(r){return REGION_COLORS[r]+'D9';}), borderColor:regions.map(function(r){return REGION_COLORS[r];}), borderWidth:2, yAxisID:'y' },
+        { label:'总工时(h)', data:hrs, backgroundColor:regions.map(function(r){return REGION_COLORS[r]+'D9';}), borderColor:regions.map(function(r){return REGION_COLORS[r];}), borderWidth:2, yAxisID:'y1' }
+      ]},
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{labels:{usePointStyle:true}}, tooltip:{callbacks:{label:function(c){if(c.dataset.label.includes('付款')) return ['$'+c.raw.toLocaleString(), '≈ ¥'+Math.round(c.raw*EXCHANGE_RATE).toLocaleString()]; return c.raw.toLocaleString()+'h';}}}, datalabels:{anchor:'end',align:'end',offset:2,font:{weight:'bold',size:10},color:'#333',formatter:function(v){return fmtLabel(v);}} }, scales:{ y:{type:'linear',position:'left',title:{display:true,text:'付款金额(USD)'},grid:{color:'#f0f0f0'}}, y1:{type:'linear',position:'right',title:{display:true,text:'工时(h)'},grid:{drawOnChartArea:false}}, x:{grid:{color:'#f0f0f0'}} } }
+    });
+  } else {
+    title.textContent = currentRegion + ' - 四级组织付款对比';
+    var recs = RECORDS.filter(function(r){return r.region===currentRegion;});
+    if (currentPeriod!=='all') recs = recs.filter(function(r){return r.period===currentPeriod;});
+    var l4m = {}; recs.forEach(function(r){ var k=r.level4||'(未分类)'; l4m[k]=(l4m[k]||0)+r.payment; });
+    var entries = Object.entries(l4m).sort(function(a,b){return b[1]-a[1];});
+    var labels = entries.map(function(e){return e[0];});
+    var data = entries.map(function(e){return Math.round(e[1]*100)/100;});
+    var color = REGION_COLORS[currentRegion]||'#3498DB';
+
+    if (labels.length===0||(labels.length===1&&labels[0]==='(未分类)')) {
+      title.textContent = currentRegion + ' - 月度趋势';
+      var monthly = PERIODS.map(function(p){ var rr=RECORDS.filter(function(r){return r.region===currentRegion&&r.period===p;}); return Math.round(rr.reduce(function(s,r){return s+r.payment;},0)*100)/100; });
+      charts.regionCompare = new Chart(ctx, { type:'bar', data:{ labels:PERIODS, datasets:[{label:'付款总额(USD)',data:monthly,backgroundColor:PERIODS.map(function(_,i){var al=['D9','B3','8C','66','4D'];return color+al[i%al.length];}),borderColor:color,borderWidth:2}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{usePointStyle:true}},tooltip:{callbacks:{label:function(c){return['$'+c.raw.toLocaleString(),'≈ ¥'+Math.round(c.raw*EXCHANGE_RATE).toLocaleString()];}}},datalabels:{anchor:'end',align:'end',offset:2,font:{weight:'bold',size:10},color:'#333',formatter:function(v){return fmtLabel(v);}}},scales:{y:{grid:{color:'#f0f0f0'}},x:{grid:{color:'#f0f0f0'}}}} });
+    } else {
+      charts.regionCompare = new Chart(ctx, { type:'bar', data:{ labels:labels, datasets:[{label:'付款金额(USD)',data:data,backgroundColor:labels.map(function(_,i){return REGION_COLORS[REGION_NAMES[i%REGION_NAMES.length]]+'D9';}),borderColor:labels.map(function(_,i){return REGION_COLORS[REGION_NAMES[i%REGION_NAMES.length]];}),borderWidth:2}]}, options:{ responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{labels:{usePointStyle:true}},tooltip:{callbacks:{label:function(c){return['$'+c.raw.toLocaleString(),'≈ ¥'+Math.round(c.raw*EXCHANGE_RATE).toLocaleString()];}}},datalabels:{anchor:'end',align:'end',offset:4,font:{weight:'bold',size:10},color:'#333',formatter:function(v){return fmtLabel(v);}}},scales:{x:{grid:{color:'#f0f0f0'}}}} });
+    }
+  }
+}
+
+function renderRegionPie() {
+  destroyChart('regionPie');
+  var ctx = getCtx('chartRegionPie'); if (!ctx) return;
+  var title = document.getElementById('titleRegionPie');
+
+  if (currentRegion === 'all') {
+    title.textContent = '大区成本占比';
+    var regions = REGION_NAMES.filter(function(r){ return RECORDS.some(function(x){return x.region===r&&(currentPeriod==='all'||x.period===currentPeriod);}); });
+    var data = regions.map(function(r){
+      var rr = RECORDS.filter(function(x){return x.region===r&&(currentPeriod==='all'||x.period===currentPeriod);});
+      return Math.round(rr.reduce(function(s,x){return s+x.payment;},0)*100)/100;
+    });
+    var total = data.reduce(function(s,v){return s+v;},0)||1;
+
+    charts.regionPie = new Chart(ctx, { type:'doughnut', data:{ labels:regions, datasets:[{ data:data, backgroundColor:regions.map(function(r){return REGION_COLORS[r]+'D9';}), borderColor:regions.map(function(r){return REGION_COLORS[r];}), borderWidth:2 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'right',labels:{usePointStyle:true,font:{size:11}}}, tooltip:{callbacks:{label:function(c){var pct=((c.raw/total)*100).toFixed(1); return [' '+c.label+': $'+c.raw.toLocaleString()+' ('+pct+'%)', '≈ ¥'+Math.round(c.raw*EXCHANGE_RATE).toLocaleString()];}}}, datalabels:{ color:'#fff', font:{weight:'bold',size:12}, formatter:function(v){ return fmtLabel(v)+'\n'+((v/total)*100).toFixed(1)+'%'; } } } } });
+  } else {
+    title.textContent = currentRegion + ' - 四级组织占比';
+    var recs = RECORDS.filter(function(r){return r.region===currentRegion;});
+    if (currentPeriod!=='all') recs = recs.filter(function(r){return r.period===currentPeriod;});
+    var l4m = {}; recs.forEach(function(r){ var k=r.level4||'(未分类)'; l4m[k]=(l4m[k]||0)+r.payment; });
+    var entries = Object.entries(l4m).sort(function(a,b){return b[1]-a[1];});
+    if (entries.length===0||(entries.length===1&&entries[0][0]==='(未分类)')) { document.getElementById('cardRegionPie').classList.add('hidden'); return; }
+    document.getElementById('cardRegionPie').classList.remove('hidden');
+
+    var labels = entries.map(function(e){return e[0];});
+    var data = entries.map(function(e){return Math.round(e[1]*100)/100;});
+    var total = data.reduce(function(s,v){return s+v;},0)||1;
+    var bg = labels.map(function(_,i){return REGION_COLORS[REGION_NAMES[i%REGION_NAMES.length]];});
+
+    charts.regionPie = new Chart(ctx, { type:'doughnut', data:{ labels:labels, datasets:[{ data:data, backgroundColor:bg.map(function(c){return c+'D9';}), borderColor:bg, borderWidth:1 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'right',labels:{usePointStyle:true,font:{size:11}}}, tooltip:{callbacks:{label:function(c){var pct=((c.raw/total)*100).toFixed(1); return [' '+c.label+': $'+c.raw.toLocaleString()+' ('+pct+'%)', '≈ ¥'+Math.round(c.raw*EXCHANGE_RATE).toLocaleString()];}}}, datalabels:{ color:'#fff', font:{weight:'bold',size:12}, formatter:function(v){ return fmtLabel(v)+'\n'+((v/total)*100).toFixed(1)+'%'; } } } } });
+  }
+}
+
+function renderVendorRank() {
+  destroyChart('vendorRank');
+  var ctx = getCtx('chartVendorRank'); if (!ctx) return;
+  var recs = filtered();
+  var vm = {};
+  recs.forEach(function(r){ vm[r.vendor] = (vm[r.vendor]||0)+r.payment; });
+  var sorted = Object.entries(vm).sort(function(a,b){return b[1]-a[1];}).slice(0,15);
+  var l = sorted.map(function(e){return e[0];}).reverse();
+  var d = sorted.map(function(e){return Math.round(e[1]*100)/100;}).reverse();
+  var base = currentRegion==='all' ? '#E74C3C' : REGION_COLORS[currentRegion];
+
+  charts.vendorRank = new Chart(ctx, { type:'bar', data:{ labels:l, datasets:[{label:'付款金额(USD)',data:d,backgroundColor:base+'CC',borderColor:base,borderWidth:1,barThickness:18}]}, options:{ responsive:true,maintainAspectRatio:false,indexAxis:'y', plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return['$'+c.raw.toLocaleString(),'≈ ¥'+Math.round(c.raw*EXCHANGE_RATE).toLocaleString()];}}},datalabels:{anchor:'end',align:'end',offset:4,font:{weight:'bold',size:10},color:'#333',formatter:function(v){return fmtLabel(v);}}}, scales:{ x:{grid:{color:'#f0f0f0'},title:{display:true,text:'付款金额(USD)'}}, y:{grid:{color:'#f0f0f0'}} } } });
+}
+
+function renderScatter() {
+  destroyChart('scatter');
+  var ctx = getCtx('chartScatter'); if (!ctx) return;
+  var recs = RECORDS;
+  if (currentPeriod!=='all') recs = recs.filter(function(r){return r.period===currentPeriod;});
+
+  var unique = {};
+  recs.forEach(function(r){ var k=r.vendor+'|'+r.region; if(!unique[k]) unique[k]={vendor:r.vendor,region:r.region,payment:0,hours:0}; unique[k].payment+=r.payment; unique[k].hours+=r.hours; });
+  var pts = Object.values(unique).map(function(u){ return { x:Math.round(u.hours*100)/100, y:Math.round(u.payment*100)/100, vendor:u.vendor, region:u.region }; });
+
+  var xV = pts.map(function(p){return p.x;}), yV = pts.map(function(p){return p.y;});
+  var datasets = REGION_NAMES.map(function(region){
+    var ip = pts.filter(function(p){return p.region===region;});
+    return { label:region, data:ip.map(function(p){return {x:p.x,y:p.y,vendor:p.vendor};}), backgroundColor:REGION_COLORS[region]+'99', borderColor:REGION_COLORS[region], borderWidth:1, pointRadius:4, pointHoverRadius:7 };
+  }).filter(function(ds){return ds.data.length>0;});
+
+  charts.scatter = new Chart(ctx, { type:'scatter', data:{datasets:datasets}, options:{ responsive:true,maintainAspectRatio:false, plugins:{ legend:{position:'top',labels:{usePointStyle:true,padding:12}}, tooltip:{callbacks:{label:function(c){var d=c.raw; return [' '+d.vendor+'（'+d.region+'）: $'+d.y.toLocaleString()+' / '+d.x.toLocaleString()+'h', '≈ ¥'+Math.round(d.y*EXCHANGE_RATE).toLocaleString()];}}}, datalabels:{display:false} }, scales:{ x:{title:{display:true,text:'总工时(h)'},grid:{color:'#f0f0f0'}}, y:{title:{display:true,text:'付款金额(USD)'},grid:{color:'#f0f0f0'}} } } });
+
+  // Interpretation
+  if (pts.length>0) {
+    var n=pts.length, mx=pts.reduce(function(s,p){return s+p.x;},0)/n, my=pts.reduce(function(s,p){return s+p.y;},0)/n;
+    var sd=Math.sqrt(pts.reduce(function(s,p){return s+Math.pow(p.x-mx,2);},0)), sy=Math.sqrt(pts.reduce(function(s,p){return s+Math.pow(p.y-my,2);},0));
+    var highCost=pts.filter(function(p){return p.x<mx-sd*0.5&&p.y>my+sy*0.5;});
+    var highEff=pts.filter(function(p){return p.x>mx+sd*0.5&&p.y<my-sy*0.5;});
+    var h='<span style="font-weight:700;color:#1e293b;">散点图解读（当前筛选条件下共'+n+'家劳务公司）</span><br><br><b>高性价比建议关注：</b>';
+    if(highEff.length>0){ h+='<ul style="margin:4px 0 4px 16px;">'; highEff.slice(0,5).forEach(function(p){h+='<li>'+p.vendor+'（'+p.region+'）：'+p.x.toLocaleString()+'h / $'+p.y.toLocaleString()+'</li>';}); h+='</ul>'; } else h+='暂无明显高性价比异常点。';
+    h+='<br><b>重点关注对象（高付款低工时）：</b>';
+    if(highCost.length>0){ h+='<ul style="margin:4px 0 4px 16px;">'; highCost.slice(0,5).forEach(function(p){h+='<li>'+p.vendor+'（'+p.region+'）：'+p.x.toLocaleString()+'h / $'+p.y.toLocaleString()+'</li>';}); h+='</ul>'; } else h+='暂无明显异常高付款点。';
+    document.getElementById('scatter-tip').innerHTML = h;
+  }
+}
+
+function renderGround() {
+  destroyChart('ground');
+  if (currentRegion!=='all'&&currentRegion!=='Ground项目部') { document.getElementById('cardGround').classList.add('hidden'); return; }
+  document.getElementById('cardGround').classList.remove('hidden');
+  var ctx = getCtx('chartGround'); if (!ctx) return;
+  var recs = RECORDS.filter(function(r){return r.region==='Ground项目部';});
+  if (currentPeriod!=='all') recs = recs.filter(function(r){return r.period===currentPeriod;});
+  var l4m = {}; recs.forEach(function(r){ var k=r.level4||'(未分类)'; l4m[k]=(l4m[k]||0)+r.payment; });
+  var entries = Object.entries(l4m).sort(function(a,b){return b[1]-a[1];});
+
+  charts.ground = new Chart(ctx, { type:'bar', data:{ labels:entries.map(function(e){return e[0];}), datasets:[{label:'付款金额(USD)',data:entries.map(function(e){return Math.round(e[1]*100)/100;}),backgroundColor:'#1ABC9CCC',borderColor:'#1ABC9C',borderWidth:2}]}, options:{ responsive:true,maintainAspectRatio:false, plugins:{legend:{labels:{usePointStyle:true}},datalabels:{anchor:'end',align:'end',offset:2,font:{weight:'bold',size:10},color:'#333',formatter:function(v){return fmtLabel(v);}}}, scales:{y:{grid:{color:'#f0f0f0'}},x:{grid:{color:'#f0f0f0'}}} } });
+}
+
+// ==================== TABLE ====================
+var tableSortCol = 'period', tableSortAsc = false;
+
+function renderTable() {
+  var recs = filtered();
+  var rows = [];
+
+  if (currentRegion === 'all') {
+    var am = {};
+    recs.forEach(function(r){
+      var k = r.period+'||'+r.region;
+      if (!am[k]) am[k] = { period:r.period, region:r.region, vendors:{}, payment:0, hours:0 };
+      am[k].vendors[r.vendor]=true; am[k].payment+=r.payment; am[k].hours+=r.hours;
+    });
+    Object.values(am).forEach(function(d){
+      rows.push({ period:d.period, region:d.region, vendorCount:Object.keys(d.vendors).length, payment:d.payment, hours:d.hours, unitCost:d.hours>0?d.payment/d.hours:0 });
+    });
+  } else {
+    var am2 = {};
+    recs.forEach(function(r){
+      var k = r.period+'||'+r.vendor;
+      if (!am2[k]) am2[k] = { period:r.period, region:r.region, vendor:r.vendor, payment:0, hours:0 };
+      am2[k].payment+=r.payment; am2[k].hours+=r.hours;
+    });
+    Object.values(am2).forEach(function(d){
+      rows.push({ period:d.period, region:d.region, vendor:d.vendor, payment:d.payment, hours:d.hours, unitCost:d.hours>0?d.payment/d.hours:0 });
+    });
+  }
+
+  rows.sort(function(a,b){ var va=a[tableSortCol]||'', vb=b[tableSortCol]||''; var cmp=va<vb?-1:va>vb?1:0; return tableSortAsc?cmp:-cmp; });
+
+  var colsAll = [
+    { key:'period', label:'周期', align:'left' },
+    { key:'region', label:'大区', align:'left' },
+    { key:'vendorCount', label:'劳务公司数', align:'right' },
+    { key:'payment', label:'原币付款金额(USD)', align:'right' },
+    { key:'cny', label:'本币付款金额(CNY)', align:'right' },
+    { key:'hours', label:'总工时(h)', align:'right' },
+    { key:'unitCost', label:'单位工时成本(USD/h)', align:'right' }
+  ];
+  var colsRegion = [
+    { key:'period', label:'周期', align:'left' },
+    { key:'region', label:'大区', align:'left' },
+    { key:'vendor', label:'劳务公司', align:'left' },
+    { key:'payment', label:'原币付款金额(USD)', align:'right' },
+    { key:'cny', label:'本币付款金额(CNY)', align:'right' },
+    { key:'hours', label:'总工时(h)', align:'right' },
+    { key:'unitCost', label:'单位工时成本(USD/h)', align:'right' }
+  ];
+  var cols = currentRegion==='all' ? colsAll : colsRegion;
+
+  var headHtml = '<tr>' + cols.map(function(c){
+    var icon = c.key===tableSortCol ? (tableSortAsc?' ▲':' ▼') : '';
+    return '<th style="cursor:pointer;text-align:'+c.align+';" onclick="sortTable(\''+c.key+'\')">'+c.label+icon+'</th>';
+  }).join('') + '</tr>';
+  document.getElementById('tableHead').innerHTML = headHtml;
+
+  var nf = function(v,d){ return v.toLocaleString('en-US',{minimumFractionDigits:d||0,maximumFractionDigits:d||0}); };
+  var body = '';
+  rows.forEach(function(r){
+    var cny = r.payment * EXCHANGE_RATE;
+    if (currentRegion==='all') {
+      body += '<tr><td>'+r.period+'</td><td><span style="color:'+(REGION_COLORS[r.region]||'#333')+';font-weight:500;">'+r.region+'</span></td><td style="text-align:right;">'+r.vendorCount+'</td><td style="text-align:right;font-weight:500;">$'+nf(r.payment,2)+'</td><td style="text-align:right;">¥'+nf(cny,2)+'</td><td style="text-align:right;">'+nf(r.hours,2)+'</td><td style="text-align:right;">'+r.unitCost.toFixed(2)+'</td></tr>';
+    } else {
+      body += '<tr><td>'+r.period+'</td><td><span style="color:'+(REGION_COLORS[r.region]||'#333')+';font-weight:500;">'+r.region+'</span></td><td>'+(r.vendor||'')+'</td><td style="text-align:right;font-weight:500;">$'+nf(r.payment,2)+'</td><td style="text-align:right;">¥'+nf(cny,2)+'</td><td style="text-align:right;">'+nf(r.hours,2)+'</td><td style="text-align:right;">'+r.unitCost.toFixed(2)+'</td></tr>';
+    }
+  });
+  document.getElementById('tableBody').innerHTML = body || '<tr><td colspan="'+cols.length+'" style="text-align:center;color:#aaa;padding:20px;">暂无数据</td></tr>';
+}
+
+function sortTable(col) {
+  if (tableSortCol===col) tableSortAsc=!tableSortAsc; else { tableSortCol=col; tableSortAsc=false; }
+  renderTable();
+}
+
+// ==================== CSV EXPORT ====================
+function exportCSV() {
+  var recs = filtered();
+  var BOM = '\uFEFF', lines = [];
+
+  if (currentRegion==='all') {
+    lines.push('周期,大区,劳务公司数,原币付款金额(USD),本币付款金额(CNY),总工时(h),单位工时成本');
+    var am = {};
+    recs.forEach(function(r){ var k=r.period+'||'+r.region; if(!am[k]) am[k]={period:r.period,region:r.region,vendors:{},payment:0,hours:0}; am[k].vendors[r.vendor]=true; am[k].payment+=r.payment; am[k].hours+=r.hours; });
+    Object.values(am).sort(function(a,b){return b.period.localeCompare(a.period)||a.region.localeCompare(b.region);}).forEach(function(d){
+      lines.push([d.period, d.region, Object.keys(d.vendors).length, d.payment.toFixed(2), (d.payment*EXCHANGE_RATE).toFixed(2), d.hours.toFixed(2), (d.hours>0?d.payment/d.hours:0).toFixed(2)].join(','));
+    });
+  } else {
+    lines.push('周期,大区,劳务公司,原币付款金额(USD),本币付款金额(CNY),总工时(h),单位工时成本');
+    var am2 = {};
+    recs.forEach(function(r){ var k=r.period+'||'+r.vendor; if(!am2[k]) am2[k]={period:r.period,region:r.region,vendor:r.vendor,payment:0,hours:0}; am2[k].payment+=r.payment; am2[k].hours+=r.hours; });
+    Object.values(am2).sort(function(a,b){return b.period.localeCompare(a.period)||a.vendor.localeCompare(b.vendor);}).forEach(function(d){
+      lines.push([d.period, d.region, '"'+d.vendor+'"', d.payment.toFixed(2), (d.payment*EXCHANGE_RATE).toFixed(2), d.hours.toFixed(2), (d.hours>0?d.payment/d.hours:0).toFixed(2)].join(','));
+    });
+  }
+
+  var blob = new Blob([BOM+lines.join('\n')], {type:'text/csv;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href=url; a.download='劳务付款明细_'+(currentRegion==='all'?'全部':currentRegion)+'.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
