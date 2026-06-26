@@ -235,15 +235,9 @@ tr:hover td { background:#f8fafc; }
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
-<script>
-// Fallback: if jsdelivr CDN fails, try unpkg
-if (typeof window.supabase === 'undefined') {
-  document.write('<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"><\/script>');
-}
-</script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/lib/chart.umd.min.js"></script>
+<script src="/lib/chartjs-plugin-datalabels.min.js"></script>
+<script src="/lib/supabase.min.js"></script>
 <script>
 // ==================== CONFIG ====================
 const SUPABASE_URL = 'https://fgibhpggdmimxjknqqah.supabase.co';
