@@ -237,6 +237,12 @@ tr:hover td { background:#f8fafc; }
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+<script>
+// Fallback: if jsdelivr CDN fails, try unpkg
+if (typeof window.supabase === 'undefined') {
+  document.write('<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"><\/script>');
+}
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ==================== CONFIG ====================
@@ -253,7 +259,9 @@ const REGION_COLORS = {
 const REGION_NAMES = ["MS中南大区", "WE美西大区", "TX德州大区", "NE东北大区", "GL大湖大区", "Ground项目部"];
 
 // ==================== STATE ====================
-let supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Safe init — don't crash the page if CDN fails
+let supabase = null;
+try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e) { console.warn('Supabase 未加载，数据功能暂不可用'); }
 let USER = null;
 let PERIODS = [];
 let RECORDS = [];
@@ -354,6 +362,10 @@ function renderRegionButtons() {
 
 // ==================== DATA LOADING ====================
 async function loadData() {
+  if (!supabase) {
+    console.warn('Supabase 未就绪，跳过数据加载');
+    return;
+  }
   let result = await supabase.from('dashboard_data').select('*');
   if (result.error) {
     alert('数据加载失败：' + result.error.message);
