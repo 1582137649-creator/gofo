@@ -264,23 +264,40 @@ let currentPeriod = 'all';
 let charts = {};
 
 // ==================== FEISHU SSO AUTH ====================
-async function handleLogin() {
-  const btn = document.getElementById('loginBtn');
-  const errEl = document.getElementById('loginError');
+function handleLogin() {
+  console.log('[BP Dashboard] handleLogin triggered');
+  var redirectUrl = API_BASE.replace(/\/+$/, '') + '/api/auth/feishu';
+  console.log('[BP Dashboard] Redirecting to:', redirectUrl);
+
+  var btn = document.getElementById('loginBtn');
+  var errEl = document.getElementById('loginError');
+  if (!btn) {
+    console.error('[BP Dashboard] loginBtn not found, force redirect');
+    window.location.href = redirectUrl;
+    return;
+  }
   btn.disabled = true;
   btn.innerHTML = '<span class="login-loading"></span>跳转中...';
-  errEl.textContent = '';
-  window.location.href = API_BASE + '/api/auth/feishu';
+  if (errEl) errEl.textContent = '';
+  
+  // Primary: window.location.href
+  window.location.href = redirectUrl;
+  
+  // Fallback: if still on same page after 300ms, try replace
+  setTimeout(function() {
+    window.location.replace(redirectUrl);
+  }, 300);
 }
 
-async function handleLogout() {
+function handleLogout() {
   localStorage.removeItem('bp_jwt_token');
   window.location.reload();
 }
 
 async function verifyToken(token) {
   try {
-    const res = await fetch(API_BASE + '/api/auth/me', {
+    var url = API_BASE.replace(/\/+$/, '') + '/api/auth/me';
+    const res = await fetch(url, {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     if (!res.ok) return null;
@@ -293,13 +310,23 @@ async function verifyToken(token) {
 
 // ==================== INIT ====================
 window.addEventListener('DOMContentLoaded', async function() {
+  console.log('[BP Dashboard] DOM ready, initializing...');
+
+  // Bind login button via addEventListener (more reliable than inline onclick)
+  var loginBtn = document.getElementById('loginBtn');
+  if (loginBtn) {
+    loginBtn.addEventListener('click', handleLogin);
+    console.log('[BP Dashboard] loginBtn click handler bound');
+  } else {
+    console.warn('[BP Dashboard] loginBtn not found in DOM');
+  }
+
   // Check if token is in URL hash (from OAuth callback)
   let token = null;
   const hash = window.location.hash;
   const hashMatch = hash.match(/token=([^&]+)/);
   if (hashMatch) {
     token = hashMatch[1];
-    // Clean URL
     history.replaceState(null, '', window.location.pathname);
   }
   if (!token) {
@@ -312,12 +339,14 @@ window.addEventListener('DOMContentLoaded', async function() {
       USER = user;
       localStorage.setItem('bp_jwt_token', token);
       showDashboard();
+      console.log('[BP Dashboard] Dashboard shown for:', user.name || user.open_id);
     } else {
       localStorage.removeItem('bp_jwt_token');
       showLogin();
     }
   } else {
     showLogin();
+    console.log('[BP Dashboard] Login overlay shown');
   }
 });
 
