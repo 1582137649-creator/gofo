@@ -295,6 +295,7 @@ function handleLogin() {
 
 function handleLogout() {
   localStorage.removeItem('bp_jwt_token');
+  document.cookie = 'bp_jwt_token=; Path=/; SameSite=Lax; Max-Age=0';
   window.location.reload();
 }
 
@@ -364,6 +365,7 @@ window.addEventListener('DOMContentLoaded', async function() {
       USER = user;
       // Sync token to both cookie and localStorage for reliability
       localStorage.setItem('bp_jwt_token', token);
+      document.cookie = 'bp_jwt_token=' + token + '; Path=/; SameSite=Lax; Max-Age=604800';
       showDashboard();
       console.log('[BP Dashboard] Dashboard shown for:', user.name || user.open_id);
     } else {
