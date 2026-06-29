@@ -301,13 +301,20 @@ function handleLogout() {
 async function verifyToken(token) {
   try {
     var url = API_BASE.replace(/\/+$/, '') + '/api/auth/me';
+    console.log('[BP Dashboard] verifyToken calling:', url);
     const res = await fetch(url, {
       headers: { 'Authorization': 'Bearer ' + token }
     });
-    if (!res.ok) return null;
+    console.log('[BP Dashboard] /api/auth/me status:', res.status);
+    if (!res.ok) {
+      const errBody = await res.text();
+      console.warn('[BP Dashboard] /api/auth/me error body:', errBody);
+      return null;
+    }
     const data = await res.json();
     return data.authenticated ? data.user : null;
   } catch (e) {
+    console.error('[BP Dashboard] verifyToken exception:', e.message);
     return null;
   }
 }
@@ -325,26 +332,35 @@ window.addEventListener('DOMContentLoaded', async function() {
     console.warn('[BP Dashboard] loginBtn not found in DOM');
   }
 
-  // Check if token is in URL hash (from OAuth callback)
-  let token = null;
-  const hash = window.location.hash;
-  const hashMatch = hash.match(/token=([^&]+)/);
-  if (hashMatch) {
-    token = hashMatch[1];
-    history.replaceState(null, '', window.location.pathname);
-  }
+  // Read token from localStorage (set by OAuth callback relay page)
+  let token = localStorage.getItem('bp_jwt_token');
+  console.log('[BP Dashboard] localStorage token:', token ? 'present (' + token.substring(0, 20) + '...)' : 'none');
+
+  // Fallback: check URL hash for backward compatibility
   if (!token) {
-    token = localStorage.getItem('bp_jwt_token');
+    const hash = window.location.hash;
+    if (hash && hash.includes('token=')) {
+      const m = hash.match(/token=([^&]+)/);
+      if (m) {
+        token = m[1];
+        localStorage.setItem('bp_jwt_token', token);
+        history.replaceState(null, '', window.location.pathname);
+        console.log('[BP Dashboard] token recovered from URL hash');
+      }
+    }
   }
 
   if (token) {
+    console.log('[BP Dashboard] Verifying token...');
     const user = await verifyToken(token);
+    console.log('[BP Dashboard] verifyToken result:', user ? 'success' : 'FAILED');
     if (user) {
       USER = user;
       localStorage.setItem('bp_jwt_token', token);
       showDashboard();
       console.log('[BP Dashboard] Dashboard shown for:', user.name || user.open_id);
     } else {
+      console.warn('[BP Dashboard] Token invalid or expired, clearing...');
       localStorage.removeItem('bp_jwt_token');
       showLogin();
     }

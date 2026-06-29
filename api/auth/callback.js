@@ -196,17 +196,32 @@ module.exports = async (req, res) => {
     const jwtExpiresIn = parseInt(process.env.JWT_EXPIRES_IN || '604800', 10);
     const token = jwt.sign(jwtPayload, jwtSecret, { expiresIn: jwtExpiresIn });
 
-    // Step 5: Redirect back to frontend with JWT (relative path, avoids env var issues)
+    // Step 5: Render a relay page that stores JWT in localStorage, then redirects cleanly to /
+    // This avoids all URL-hash parsing issues in Vercel serverless environment
     const isProd = process.env.VERCEL_ENV === 'production';
 
     // Clear state cookie
     res.setHeader('Set-Cookie', `oauth_state=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0; ${isProd ? 'Secure;' : ''}`);
 
-    // Redirect to root with JWT in hash (stays on same domain)
-    res.writeHead(302, {
-      Location: `/#token=${token}`,
-    });
-    res.end();
+    // HTML-escape the token for safe embedding
+    const safeToken = token.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(`<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>登录成功，跳转中...</title></head>
+<body style="font-family:Arial,sans-serif;text-align:center;padding-top:80px;background:#f5f7fa;">
+  <p style="color:#333;font-size:18px;">登录成功，正在跳转...</p>
+  <script>
+    try {
+      localStorage.setItem('bp_jwt_token', '${safeToken}');
+      window.location.replace('/');
+    } catch(e) {
+      document.body.innerHTML = '<p style="color:#E74C3C;">跳转失败，请刷新页面重试</p>';
+    }
+  </script>
+</body>
+</html>`);
   } catch (err) {
     console.error('OAuth callback error:', err);
     return res.status(500).json({ error: `OAuth failed: ${err.message}` });
