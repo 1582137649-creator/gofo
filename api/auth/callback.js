@@ -196,32 +196,20 @@ module.exports = async (req, res) => {
     const jwtExpiresIn = parseInt(process.env.JWT_EXPIRES_IN || '604800', 10);
     const token = jwt.sign(jwtPayload, jwtSecret, { expiresIn: jwtExpiresIn });
 
-    // Step 5: Render a relay page that stores JWT in localStorage, then redirects cleanly to /
-    // This avoids all URL-hash parsing issues in Vercel serverless environment
-    const isProd = process.env.VERCEL_ENV === 'production';
+    // Step 5: Set JWT cookie + 302 redirect to /
+    // Cookie approach is the most reliable across all Vercel serverless environments
+    // No HTML relay page, no URL hash — just a plain HTTP redirect with a cookie
+    const jwtExpiresInSeconds = parseInt(process.env.JWT_EXPIRES_IN || '604800', 10);
 
-    // Clear state cookie
-    res.setHeader('Set-Cookie', `oauth_state=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0; ${isProd ? 'Secure;' : ''}`);
+    // Clear CSRF state cookie; set JWT as non-HttpOnly cookie so frontend JS can read it
+    res.setHeader('Set-Cookie', [
+      'oauth_state=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0',
+      `bp_jwt_token=${token}; Path=/; SameSite=Lax; Max-Age=${jwtExpiresInSeconds}`,
+    ]);
 
-    // HTML-escape the token for safe embedding
-    const safeToken = token.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-
-    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end(`<!DOCTYPE html>
-<html lang="zh-CN">
-<head><meta charset="utf-8"><title>登录成功，跳转中...</title></head>
-<body style="font-family:Arial,sans-serif;text-align:center;padding-top:80px;background:#f5f7fa;">
-  <p style="color:#333;font-size:18px;">登录成功，正在跳转...</p>
-  <script>
-    try {
-      localStorage.setItem('bp_jwt_token', '${safeToken}');
-      window.location.replace('/');
-    } catch(e) {
-      document.body.innerHTML = '<p style="color:#E74C3C;">跳转失败，请刷新页面重试</p>';
-    }
-  </script>
-</body>
-</html>`);
+    // Plain 302 redirect to root — no hash, no relay page
+    res.writeHead(302, { Location: '/' });
+    res.end();
   } catch (err) {
     console.error('OAuth callback error:', err);
     return res.status(500).json({ error: `OAuth failed: ${err.message}` });

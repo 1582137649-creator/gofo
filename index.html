@@ -332,30 +332,37 @@ window.addEventListener('DOMContentLoaded', async function() {
     console.warn('[BP Dashboard] loginBtn not found in DOM');
   }
 
-  // Read token from localStorage (set by OAuth callback relay page)
-  let token = localStorage.getItem('bp_jwt_token');
-  console.log('[BP Dashboard] localStorage token:', token ? 'present (' + token.substring(0, 20) + '...)' : 'none');
+  // Helper: read cookie by name
+  function getCookie(name) {
+    var m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+    return m ? decodeURIComponent(m[1]) : null;
+  }
 
-  // Fallback: check URL hash for backward compatibility
+  // Read token: cookie first (set by OAuth callback), then localStorage (fallback)
+  var token = getCookie('bp_jwt_token');
+  console.log('[BP Dashboard] cookie token:', token ? 'present (' + token.substring(0, 20) + '...)' : 'none');
+
   if (!token) {
-    const hash = window.location.hash;
-    if (hash && hash.includes('token=')) {
-      const m = hash.match(/token=([^&]+)/);
-      if (m) {
-        token = m[1];
-        localStorage.setItem('bp_jwt_token', token);
-        history.replaceState(null, '', window.location.pathname);
-        console.log('[BP Dashboard] token recovered from URL hash');
-      }
+    token = localStorage.getItem('bp_jwt_token');
+    console.log('[BP Dashboard] localStorage token:', token ? 'present (' + token.substring(0, 20) + '...)' : 'none');
+  }
+
+  // Fallback: URL hash for backward compatibility
+  if (!token) {
+    var hash = window.location.hash;
+    if (hash && hash.indexOf('token=') !== -1) {
+      var m2 = hash.match(/token=([^&]+)/);
+      if (m2) { token = m2[1]; history.replaceState(null, '', window.location.pathname); }
     }
   }
 
   if (token) {
     console.log('[BP Dashboard] Verifying token...');
-    const user = await verifyToken(token);
+    var user = await verifyToken(token);
     console.log('[BP Dashboard] verifyToken result:', user ? 'success' : 'FAILED');
     if (user) {
       USER = user;
+      // Sync token to both cookie and localStorage for reliability
       localStorage.setItem('bp_jwt_token', token);
       showDashboard();
       console.log('[BP Dashboard] Dashboard shown for:', user.name || user.open_id);
@@ -366,7 +373,7 @@ window.addEventListener('DOMContentLoaded', async function() {
     }
   } else {
     showLogin();
-    console.log('[BP Dashboard] Login overlay shown');
+    console.log('[BP Dashboard] Login overlay shown (no token)');
   }
 });
 
