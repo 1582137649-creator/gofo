@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BP Dashboard — 权限管理</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, 'Microsoft YaHei', sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; }
+.header { background: linear-gradient(135deg, #1a1a2e, #16213e); color: #fff; padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; }
+.header h1 { font-size: 22px; font-weight: 600; }
+.header a { color: #a0c4ff; text-decoration: none; font-size: 14px; }
+.header a:hover { text-decoration: underline; }
+.container { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
+.card { background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.card h2 { font-size: 18px; margin-bottom: 16px; color: #1a1a2e; border-bottom: 2px solid #e8e8e8; padding-bottom: 10px; }
+.status-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.status-ok { background: #d4edda; color: #155724; }
+.status-err { background: #f8d7da; color: #721c24; }
+.btn { display: inline-block; padding: 8px 18px; border-radius: 6px; font-size: 14px; cursor: pointer; border: none; font-weight: 500; transition: all 0.2s; }
+.btn-primary { background: #3370ff; color: #fff; }
+.btn-primary:hover { background: #2563eb; }
+.btn-danger { background: #e74c3c; color: #fff; }
+.btn-danger:hover { background: #c0392b; }
+.btn-outline { background: #fff; color: #3370ff; border: 1px solid #3370ff; }
+.btn-outline:hover { background: #eef2ff; }
+.btn-sm { padding: 4px 12px; font-size: 12px; }
+.input-row { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; }
+.input-row input { flex: 1; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 14px; }
+.input-row select { padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 14px; min-width: 160px; }
+.token-box { background: #f5f5f5; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 12px; word-break: break-all; margin: 8px 0; }
+.user-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.user-tag { background: #eef2ff; color: #3370ff; padding: 4px 10px; border-radius: 6px; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+.user-tag .remove { cursor: pointer; color: #e74c3c; font-weight: bold; font-size: 16px; line-height: 1; }
+.user-tag .remove:hover { color: #c0392b; }
+.region-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.region-box { background: #fafafa; border-radius: 8px; padding: 14px; border: 1px solid #e8e8e8; }
+.region-box h3 { font-size: 14px; color: #555; margin-bottom: 8px; }
+.toast { position: fixed; top: 20px; right: 20px; padding: 12px 20px; border-radius: 8px; color: #fff; font-size: 14px; z-index: 9999; animation: slideIn 0.3s ease; }
+.toast-success { background: #27ae60; }
+.toast-error { background: #e74c3c; }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.loading { text-align: center; padding: 40px; color: #999; }
+.empty { color: #999; font-size: 13px; font-style: italic; }
+.section-note { color: #888; font-size: 12px; margin-top: 4px; }
+.setup-form { background: linear-gradient(135deg, #fff3cd, #fffbeb); border: 2px solid #ffc107; border-radius: 12px; padding: 20px; text-align: center; }
+.setup-form h2 { border: none; margin-bottom: 8px; }
+.setup-form p { color: #856404; font-size: 14px; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚙️ BP Dashboard — 权限管理中心</h1>
+  <div>
+    <span id="userInfo" style="margin-right:16px;font-size:14px;opacity:0.8;">未登录</span>
+    <a href="/">← 返回主页</a>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- 未登录 / 需要开通管理员 -->
+  <div id="setupSection" class="card setup-form" style="display:none;">
+    <h2>🔑 开通管理员权限</h2>
+    <p>你是 <strong id="setupUserName"></strong>（open_id: <code id="setupOpenId"></code>），尚未开通管理员权限。</p>
+    <div class="input-row" style="justify-content:center;">
+      <input type="text" id="setupKeyInput" placeholder="请输入管理员 Setup Key" style="max-width:300px;">
+      <button class="btn btn-primary" onclick="activateAdmin()">开通管理员</button>
+    </div>
+    <p class="section-note">Setup Key 由系统管理员提供，请联系 ZIWEI 获取。</p>
+  </div>
+
+  <!-- 管理员配置界面 -->
+  <div id="adminSection" style="display:none;">
+
+    <!-- 管理员列表 -->
+    <div class="card">
+      <h2>👑 超级管理员列表</h2>
+      <p class="section-note" style="margin-bottom:12px;">超级管理员可查看所有区域数据，并能管理其他用户的权限。</p>
+      <div class="user-list" id="adminList"></div>
+      <div class="input-row" style="margin-top:12px;">
+        <input type="text" id="newAdminInput" placeholder="输入用户的飞书 open_id">
+        <button class="btn btn-primary" onclick="addAdmin()">添加管理员</button>
+      </div>
+    </div>
+
+    <!-- 区域权限 -->
+    <div class="card">
+      <h2>🗺️ 区域权限配置</h2>
+      <p class="section-note" style="margin-bottom:12px;">为每个区域添加可查看该区域数据的 BP 用户（open_id）。</p>
+      <div class="region-grid" id="regionGrid"></div>
+    </div>
+
+    <!-- 操作日志 -->
+    <div class="card">
+      <h2>💾 保存更改</h2>
+      <button class="btn btn-primary" onclick="savePermissions()" style="margin-right:10px;">保存全部更改</button>
+      <button class="btn btn-outline" onclick="loadPermissions()">重新加载</button>
+      <span id="saveStatus" style="margin-left:12px;font-size:13px;"></span>
+    </div>
+
+  </div>
+
+  <!-- 未登录提示 -->
+  <div id="notLoggedIn" class="card" style="text-align:center;">
+    <h2>🔒 请先登录</h2>
+    <p style="margin-bottom:16px;color:#888;">您需要通过飞书登录后才能访问权限管理中心。</p>
+    <a href="/" class="btn btn-primary">返回首页登录</a>
+  </div>
+
+</div>
+
+<script>
+// ==================== CONFIG ====================
+const API_BASE = window.location.origin;
+const SUPABASE_URL = 'https://fgibhpggdmimxjknqqah.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_7UouyWr5_y64QwrVd8qFig_8H3H0jt5';
+const REGIONS = ['MS中南大区','WE美西大区','TX德州大区','NE东北大区','GL大湖大区','Ground项目部'];
+
+let TOKEN = null;
+let USER = null;
+let PERMISSIONS = null;
+
+// ==================== INIT ====================
+window.addEventListener('DOMContentLoaded', async function() {
+  // Read token from cookie or localStorage
+  TOKEN = getCookie('bp_jwt_token') || localStorage.getItem('bp_jwt_token');
+  if (!TOKEN) {
+    document.getElementById('notLoggedIn').style.display = '';
+    return;
+  }
+
+  // Verify token
+  try {
+    const res = await fetch(API_BASE + '/api/auth/me', { headers: { 'Authorization': 'Bearer ' + TOKEN } });
+    if (!res.ok) throw new Error('Token invalid');
+    const data = await res.json();
+    if (!data.authenticated) throw new Error('Not authenticated');
+    USER = data.user;
+  } catch (e) {
+    localStorage.removeItem('bp_jwt_token');
+    document.cookie = 'bp_jwt_token=; Max-Age=0; Path=/';
+    document.getElementById('notLoggedIn').style.display = '';
+    return;
+  }
+
+  document.getElementById('notLoggedIn').style.display = 'none';
+  document.getElementById('userInfo').textContent = `${USER.name || USER.open_id} (${USER.role})`;
+
+  // Load permissions and render UI
+  await loadPermissions();
+
+  if (USER.role === 'admin') {
+    document.getElementById('adminSection').style.display = '';
+    renderAll();
+  } else {
+    document.getElementById('setupSection').style.display = '';
+    document.getElementById('setupUserName').textContent = USER.name || USER.open_id;
+    document.getElementById('setupOpenId').textContent = USER.open_id;
+  }
+});
+
+// ==================== PERMISSION LOADING ====================
+async function loadPermissions() {
+  try {
+    const res = await fetch(API_BASE + '/api/auth/admin', {
+      headers: { 'Authorization': 'Bearer ' + TOKEN }
+    });
+    PERMISSIONS = await res.json();
+  } catch (e) {
+    showToast('加载权限失败: ' + e.message, 'error');
+    PERMISSIONS = { admin_open_ids: [], region_permissions: {} };
+  }
+}
+
+// ==================== RENDER ====================
+function renderAll() {
+  renderAdminList();
+  renderRegionGrid();
+}
+
+function renderAdminList() {
+  const container = document.getElementById('adminList');
+  const admins = PERMISSIONS.admin_open_ids || [];
+  if (admins.length === 0) {
+    container.innerHTML = '<span class="empty">暂无管理员</span>';
+  } else {
+    container.innerHTML = admins.map(id => `
+      <span class="user-tag">
+        ${escapeHtml(id)}
+        <span class="remove" onclick="removeAdmin('${escapeHtml(id)}')" title="移除">×</span>
+      </span>
+    `).join('');
+  }
+}
+
+function renderRegionGrid() {
+  const container = document.getElementById('regionGrid');
+  const regionPerms = PERMISSIONS.region_permissions || {};
+
+  container.innerHTML = REGIONS.map(region => {
+    const users = regionPerms[region] || [];
+    return `<div class="region-box">
+      <h3>${region} <span style="font-weight:400;color:#999;font-size:12px;">(${users.length} 人)</span></h3>
+      <div class="user-list">${users.length === 0 ? '<span class="empty">暂无BP</span>' :
+        users.map(id => `<span class="user-tag">${escapeHtml(id)}<span class="remove" onclick="removeRegionUser('${escapeHtml(region)}','${escapeHtml(id)}')" title="移除">×</span></span>`).join('')
+      }</div>
+      <div class="input-row" style="margin-top:8px;">
+        <input type="text" id="input-${region}" placeholder="输入 open_id" style="font-size:12px;padding:6px 10px;">
+        <button class="btn btn-primary btn-sm" onclick="addRegionUser('${escapeHtml(region)}')">添加</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ==================== ADMIN MANAGEMENT ====================
+function addAdmin() {
+  const input = document.getElementById('newAdminInput');
+  const openId = input.value.trim();
+  if (!openId) return;
+  if (!PERMISSIONS) PERMISSIONS = { admin_open_ids: [], region_permissions: {} };
+  if (!PERMISSIONS.admin_open_ids) PERMISSIONS.admin_open_ids = [];
+  if (PERMISSIONS.admin_open_ids.includes(openId)) { showToast('该用户已是管理员', 'error'); return; }
+  PERMISSIONS.admin_open_ids.push(openId);
+  input.value = '';
+  renderAdminList();
+}
+
+function removeAdmin(openId) {
+  if (!PERMISSIONS || !PERMISSIONS.admin_open_ids) return;
+  PERMISSIONS.admin_open_ids = PERMISSIONS.admin_open_ids.filter(id => id !== openId);
+  renderAdminList();
+}
+
+function addRegionUser(region) {
+  const input = document.getElementById('input-' + region);
+  const openId = input.value.trim();
+  if (!openId) return;
+  if (!PERMISSIONS) PERMISSIONS = { admin_open_ids: [], region_permissions: {} };
+  if (!PERMISSIONS.region_permissions) PERMISSIONS.region_permissions = {};
+  if (!PERMISSIONS.region_permissions[region]) PERMISSIONS.region_permissions[region] = [];
+  if (PERMISSIONS.region_permissions[region].includes(openId)) { showToast('该用户已在此区域', 'error'); return; }
+  PERMISSIONS.region_permissions[region].push(openId);
+  input.value = '';
+  renderRegionGrid();
+}
+
+function removeRegionUser(region, openId) {
+  if (!PERMISSIONS || !PERMISSIONS.region_permissions || !PERMISSIONS.region_permissions[region]) return;
+  PERMISSIONS.region_permissions[region] = PERMISSIONS.region_permissions[region].filter(id => id !== openId);
+  renderRegionGrid();
+}
+
+// ==================== SAVE ====================
+async function savePermissions() {
+  if (!PERMISSIONS) return;
+  const statusEl = document.getElementById('saveStatus');
+  statusEl.textContent = '保存中...';
+  statusEl.style.color = '#3370ff';
+  try {
+    const res = await fetch(API_BASE + '/api/auth/admin', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + TOKEN,
+      },
+      body: JSON.stringify(PERMISSIONS),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      statusEl.textContent = '✅ 保存成功！';
+      statusEl.style.color = '#27ae60';
+      showToast('权限配置已保存');
+    } else {
+      statusEl.textContent = '❌ ' + (data.error || '保存失败');
+      statusEl.style.color = '#e74c3c';
+    }
+  } catch (e) {
+    statusEl.textContent = '❌ ' + e.message;
+    statusEl.style.color = '#e74c3c';
+  }
+}
+
+// ==================== SETUP ====================
+async function activateAdmin() {
+  const key = document.getElementById('setupKeyInput').value.trim();
+  if (!key) { showToast('请输入 Setup Key', 'error'); return; }
+
+  try {
+    const res = await fetch(API_BASE + '/api/auth/setup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + TOKEN,
+      },
+      body: JSON.stringify({ setup_key: key }),
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      showToast('🎉 管理员权限已开通！请刷新页面');
+      setTimeout(() => location.reload(), 1500);
+    } else {
+      showToast('❌ ' + (data.error || '开通失败'), 'error');
+    }
+  } catch (e) {
+    showToast('开通失败: ' + e.message, 'error');
+  }
+}
+
+// ==================== UTILS ====================
+function getCookie(name) {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return match ? decodeURIComponent(match[2]) : null;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function showToast(msg, type) {
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + (type === 'error' ? 'toast-error' : 'toast-success');
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => { toast.remove(); }, 3000);
+}
+</script>
+</body>
+</html>

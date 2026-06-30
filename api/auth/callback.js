@@ -4,19 +4,72 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 
-// Load permissions config (with fallback for serverless)
-let permissions = null;
-function getPermissions() {
-  if (!permissions) {
+// ==================== Permission Loading ====================
+// Priority: Supabase (dynamic) > permissions.json (static fallback)
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+const supabaseHost = supabaseUrl ? new URL(supabaseUrl).hostname : '';
+
+let permissionsCache = null;
+let cacheTime = 0;
+const CACHE_TTL = 60000; // 60 seconds
+
+async function getPermissions() {
+  // Try Supabase first
+  if (supabaseHost && supabaseKey) {
     try {
-      const permPath = path.join(process.cwd(), 'permissions.json');
-      permissions = JSON.parse(fs.readFileSync(permPath, 'utf-8'));
+      if (permissionsCache && (Date.now() - cacheTime) < CACHE_TTL) {
+        return permissionsCache;
+      }
+      const perms = await fetchPermissionsFromSupabase();
+      permissionsCache = perms;
+      cacheTime = Date.now();
+      return perms;
     } catch (e) {
-      console.warn('permissions.json not found, using empty defaults');
-      permissions = { admin_open_ids: [], region_permissions: {} };
+      console.warn('Supabase permissions fetch failed, falling back to file:', e.message);
     }
   }
-  return permissions;
+  // Fallback: permissions.json
+  return getPermissionsFromFile();
+}
+
+function fetchPermissionsFromSupabase() {
+  return new Promise((resolve, reject) => {
+    const r = https.request({
+      hostname: supabaseHost,
+      path: '/rest/v1/bp_permissions?select=key,value',
+      method: 'GET',
+      headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` },
+    }, (resp) => {
+      let body = '';
+      resp.on('data', c => body += c);
+      resp.on('end', () => {
+        const rows = JSON.parse(body);
+        const perms = {};
+        rows.forEach(row => { perms[row.key] = row.value; });
+        resolve({
+          admin_open_ids: perms.admin_open_ids || [],
+          region_permissions: perms.region_permissions || {},
+        });
+      });
+    });
+    r.on('error', reject);
+    r.end();
+  });
+}
+
+let filePermissions = null;
+function getPermissionsFromFile() {
+  if (!filePermissions) {
+    try {
+      const permPath = path.join(process.cwd(), 'permissions.json');
+      filePermissions = JSON.parse(fs.readFileSync(permPath, 'utf-8'));
+    } catch (e) {
+      console.warn('permissions.json not found, using empty defaults');
+      filePermissions = { admin_open_ids: [], region_permissions: {} };
+    }
+  }
+  return filePermissions;
 }
 
 // Get Feishu app access token (cached in module scope)
@@ -88,8 +141,8 @@ function getFeishuUserInfo(userAccessToken) {
 }
 
 // Resolve user role and allowed pages
-function getRoleAndPages(openId) {
-  const perms = getPermissions();
+async function getRoleAndPages(openId) {
+  const perms = await getPermissions();
   const adminOpenIds = perms.admin_open_ids || [];
   const regionPerms = perms.region_permissions || {};
 
@@ -181,7 +234,7 @@ module.exports = async (req, res) => {
     const userName = userInfo.name || openId;
 
     // Step 3: Resolve role and pages
-    const auth = getRoleAndPages(openId);
+    const auth = await getRoleAndPages(openId);
 
     // Step 4: Sign JWT
     const jwtPayload = {

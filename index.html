@@ -184,6 +184,7 @@ tr:hover td { background:#f8fafc; }
   <div class="user-bar">
     <span class="user-role" id="userRole"></span>
     <span class="user-name" id="userName"></span>
+    <button class="logout-btn" id="adminBtn" style="display:none;margin-right:8px;background:#ff9800;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;" onclick="window.open('/admin.html','_blank')">⚙️ 权限管理</button>
     <button class="logout-btn" onclick="handleLogout()">退出登录</button>
   </div>
   <div class="header">
@@ -389,6 +390,11 @@ function showDashboard() {
   document.getElementById('appContent').style.display = '';
   document.getElementById('userName').textContent = USER.name || USER.open_id;
   document.getElementById('userRole').textContent = USER.role === 'admin' ? '管理员' : (USER.role === 'region_bp' ? '区域BP' : '游客');
+
+  // Show admin button for admin users
+  if (USER.role === 'admin') {
+    document.getElementById('adminBtn').style.display = '';
+  }
 
   // Render region buttons based on permissions
   renderRegionButtons();
