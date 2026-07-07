@@ -1,5 +1,7 @@
 {
-  "admin_open_ids": [],
+  "admin_open_ids": [
+    "on_b12f3a95479ceee514499cf88436fb04"
+  ],
   "region_permissions": {
     "MS中南大区": [],
     "WE美西大区": [],

@@ -63,7 +63,7 @@ body { font-family: -apple-system, 'Microsoft YaHei', sans-serif; background: #f
   <!-- 未登录 / 需要开通管理员 -->
   <div id="setupSection" class="card setup-form" style="display:none;">
     <h2>🔑 开通管理员权限</h2>
-    <p>你是 <strong id="setupUserName"></strong>（open_id: <code id="setupOpenId"></code>），尚未开通管理员权限。</p>
+    <p>你是 <strong id="setupUserName"></strong>（ID: <code id="setupOpenId"></code>），尚未开通管理员权限。</p>
     <div class="input-row" style="justify-content:center;">
       <input type="text" id="setupKeyInput" placeholder="请输入管理员 Setup Key" style="max-width:300px;">
       <button class="btn btn-primary" onclick="activateAdmin()">开通管理员</button>
@@ -157,7 +157,7 @@ window.addEventListener('DOMContentLoaded', async function() {
   } else {
     document.getElementById('setupSection').style.display = '';
     document.getElementById('setupUserName').textContent = USER.name || USER.open_id;
-    document.getElementById('setupOpenId').textContent = USER.open_id;
+    document.getElementById('setupOpenId').textContent = USER.union_id || USER.open_id;
   }
 });
 

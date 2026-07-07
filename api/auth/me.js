@@ -24,6 +24,7 @@ module.exports = async (req, res) => {
       authenticated: true,
       user: {
         open_id: decoded.open_id,
+        union_id: decoded.union_id,
         name: decoded.name,
         role: decoded.role,
         regions: decoded.regions,

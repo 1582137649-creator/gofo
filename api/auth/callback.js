@@ -141,7 +141,7 @@ function getFeishuUserInfo(userAccessToken) {
 }
 
 // Resolve user role and allowed pages
-async function getRoleAndPages(openId) {
+async function getRoleAndPages(openId, unionId) {
   const perms = await getPermissions();
   const adminOpenIds = perms.admin_open_ids || [];
   const regionPerms = perms.region_permissions || {};
@@ -156,7 +156,11 @@ async function getRoleAndPages(openId) {
     'Ground项目部': 'ground',
   };
 
-  if (adminOpenIds.includes(openId)) {
+  // Check both open_id and union_id against admin list
+  const allIds = [openId, unionId].filter(Boolean);
+  const isAdmin = allIds.some(id => adminOpenIds.includes(id));
+
+  if (isAdmin) {
     return {
       role: 'admin',
       regions: ['all'],
@@ -166,7 +170,7 @@ async function getRoleAndPages(openId) {
 
   const assignedRegions = [];
   for (const [region, ids] of Object.entries(regionPerms)) {
-    if (ids.includes(openId)) {
+    if (allIds.some(id => ids.includes(id))) {
       assignedRegions.push(region);
     }
   }
@@ -231,14 +235,16 @@ module.exports = async (req, res) => {
     // Step 2: Get user info
     const userInfo = await getFeishuUserInfo(tokenResult.access_token);
     const openId = userInfo.open_id || userInfo.union_id;
+    const unionId = userInfo.union_id || openId;
     const userName = userInfo.name || openId;
 
-    // Step 3: Resolve role and pages
-    const auth = await getRoleAndPages(openId);
+    // Step 3: Resolve role and pages (check both open_id and union_id)
+    const auth = await getRoleAndPages(openId, unionId);
 
     // Step 4: Sign JWT
     const jwtPayload = {
       open_id: openId,
+      union_id: unionId,
       name: userName,
       role: auth.role,
       regions: auth.regions,

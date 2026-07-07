@@ -4,10 +4,27 @@
 // POST: 更新权限配置（仅 admin）
 // ============================================================
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const path = require('path');
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
 const supabaseHost = supabaseUrl ? new URL(supabaseUrl).hostname : '';
+
+// permissions.json fallback (for when Supabase table doesn't exist)
+let filePermissions = null;
+function getPermissionsFromFile() {
+  if (!filePermissions) {
+    try {
+      const permPath = path.join(process.cwd(), 'permissions.json');
+      filePermissions = JSON.parse(fs.readFileSync(permPath, 'utf-8'));
+    } catch (e) {
+      console.warn('permissions.json not found, using empty defaults');
+      filePermissions = { admin_open_ids: [], region_permissions: {} };
+    }
+  }
+  return filePermissions;
+}
 
 function supabaseFetch(path, method, body) {
   return new Promise((resolve, reject) => {
@@ -44,14 +61,23 @@ async function checkAdmin(req) {
 }
 
 async function loadPermissions() {
-  const result = await supabaseFetch('/rest/v1/bp_permissions?select=key,value', 'GET');
-  const rows = Array.isArray(result.data) ? result.data : [];
-  const perms = {};
-  rows.forEach(r => { perms[r.key] = r.value; });
-  return {
-    admin_open_ids: perms.admin_open_ids || [],
-    region_permissions: perms.region_permissions || {},
-  };
+  try {
+    const result = await supabaseFetch('/rest/v1/bp_permissions?select=key,value', 'GET');
+    const rows = Array.isArray(result.data) ? result.data : [];
+    if (rows.length === 0) {
+      // Table exists but empty, or table doesn't exist — fall back to file
+      throw new Error('No data in bp_permissions, using file fallback');
+    }
+    const perms = {};
+    rows.forEach(r => { perms[r.key] = r.value; });
+    return {
+      admin_open_ids: perms.admin_open_ids || [],
+      region_permissions: perms.region_permissions || {},
+    };
+  } catch (e) {
+    console.warn('Supabase load failed, using permissions.json fallback:', e.message);
+    return getPermissionsFromFile();
+  }
 }
 
 async function savePermission(key, value) {
