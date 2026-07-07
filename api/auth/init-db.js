@@ -42,11 +42,16 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST' && req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
-  // GET: return SQL for manual execution
+  // GET: support initialization via query params (for easy browser access)
   if (req.method === 'GET') {
-    return res.json({
-      message: 'POST to this endpoint with setup_key to initialize bp_permissions table',
-      sql: `-- Execute in Supabase SQL Editor:
+    const setupKey = req.query.setup_key;
+    const expectedKey = process.env.ADMIN_SETUP_KEY || 'bp2026admin';
+
+    // If no setup_key, return instructions
+    if (!setupKey) {
+      return res.json({
+        message: 'Add ?setup_key=YOUR_KEY to initialize bp_permissions table via GET, or POST with setup_key in body',
+        sql: `-- Execute in Supabase SQL Editor:
 CREATE TABLE IF NOT EXISTS bp_permissions (
   id SERIAL PRIMARY KEY,
   key TEXT UNIQUE NOT NULL,
@@ -63,7 +68,24 @@ CREATE POLICY "Allow all read on bp_permissions" ON bp_permissions FOR SELECT US
 CREATE POLICY "Allow anon insert on bp_permissions" ON bp_permissions FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow anon update on bp_permissions" ON bp_permissions FOR UPDATE USING (true);
 CREATE POLICY "Allow anon delete on bp_permissions" ON bp_permissions FOR DELETE USING (true);`
-    });
+      });
+    }
+
+    // Verify setup key
+    if (setupKey !== expectedKey) {
+      return res.status(403).json({ error: 'Setup key 错误' });
+    }
+
+    // Use query params as body
+    req.body = {
+      setup_key: setupKey,
+      admin_open_ids: req.query.admin_open_ids ? JSON.parse(req.query.admin_open_ids) : [],
+      region_permissions: req.query.region_permissions ? JSON.parse(req.query.region_permissions) : {
+        'MS中南大区': [], 'WE美西大区': [], 'TX德州大区': [],
+        'NE东北大区': [], 'GL大湖大区': [], 'Ground项目部': []
+      }
+    };
+    // Fall through to POST logic below
   }
 
   try {
