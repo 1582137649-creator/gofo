@@ -367,14 +367,12 @@ th:nth-child(6), td:nth-child(6) { width:100px; }
 
 <script src="/lib/chart.umd.min.js"></script>
 <script src="/lib/chartjs-plugin-datalabels.min.js"></script>
-<script src="/lib/supabase.min.js"></script>
+<script src="/lib/data.js"></script>
 <script>
 // Register chartjs-plugin-datalabels globally
 Chart.register(ChartDataLabels);
 
 // ==================== CONFIG ====================
-const SUPABASE_URL = 'https://fgibhpggdmimxjknqqah.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_7UouyWr5_y64QwrVd8qFig_8H3H0jt5';
 const API_BASE = window.location.origin;
 const EXCHANGE_RATE = 6.79;
 const EXCHANGE_DATE = '2026-06-25';
@@ -393,8 +391,6 @@ const REGION_COLORS = {
 const REGION_NAMES = ["MS中南大区", "TX德州大区", "NE东北大区", "WE美西大区", "GL大湖大区", "FL佛州大区", "Ground项目部", "PR波多黎各区"];
 
 // ==================== STATE ====================
-let sb = null;
-try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e) { console.warn('Supabase 未加载，数据功能暂不可用'); }
 let USER = null;
 let PERIODS = [];
 let RECORDS = [];
@@ -508,17 +504,9 @@ function renderRegionButtons() {
 }
 
 // ==================== DATA LOADING ====================
-async function loadData() {
-  if (!sb) {
-    console.warn('Supabase 未就绪，跳过数据加载');
-    return;
-  }
-  let result = await sb.from('dashboard_data').select('*');
-  if (result.error) {
-    alert('数据加载失败：' + result.error.message);
-    return;
-  }
-  RECORDS = result.data || [];
+function loadData() {
+  // Use embedded template data (882 records, matches dashboard template exactly)
+  RECORDS = (typeof TEMPLATE_RECORDS !== 'undefined') ? TEMPLATE_RECORDS : [];
 
   var periodsSet = {};
   RECORDS.forEach(function(r) { periodsSet[r.period] = true; });
