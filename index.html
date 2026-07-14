@@ -3,119 +3,242 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>美区劳务付款汇总看板</title>
+<title>美区各大区劳务付款汇总看板</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
   font-family: -apple-system, "Microsoft YaHei", "Segoe UI", sans-serif;
-  background: #f4f6f9; color: #1a1a2e; min-width: 900px;
+  background: #f4f6f9;
+  color: #1a1a2e;
+  min-width: 900px;
 }
 .header {
-  padding: 20px 30px; background: #fff; border-bottom: 1px solid #e2e8f0;
-  display: flex; flex-direction: column; align-items: center;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  padding: 20px 30px;
+  background: linear-gradient(135deg, #f8fafc 0%, #fff 100%);
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 .header h1 { font-size: 22px; font-weight: 700; color: #1a1a2e; text-align: center; }
 .header .update-time { color: #94a3b8; font-size: 13px; }
+
 .filter-bar {
-  padding: 14px 30px; background: #fff; display: flex; gap: 10px;
-  align-items: center; justify-content: center; flex-wrap: wrap;
-  border-bottom: 1px solid #e2e8f0; position: relative;
+  padding: 14px 30px;
+  background: #fff;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #e2e8f0;
+  position: relative;
 }
 .filter-bar label { color: #64748b; font-size: 13px; font-weight: 500; }
 .period-wrap {
-  position: absolute; right: 30px; top: 50%; transform: translateY(-50%);
-  display: flex; align-items: center; gap: 6px;
+  position: absolute;
+  right: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
+
 .region-btn {
-  padding: 6px 18px; border: 2px solid #cbd5e1; border-radius: 20px;
-  background: #f1f5f9; color: #475569; cursor: pointer; font-size: 13px;
-  font-weight: 500; transition: all 0.2s;
+  padding: 8px 16px;
+  border: 1px solid #E8ECF1;
+  border-left: 5px solid transparent;
+  border-radius: 6px;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  outline: none;
+  white-space: nowrap;
 }
-.region-btn.all-btn       { background:#95A5A6; color:#fff; border-color:#95A5A6; opacity:0.65; }
-.region-btn.all-btn:hover,
-.region-btn.all-btn.active { opacity:1.0; box-shadow:0 2px 8px rgba(0,0,0,0.18); }
-.region-btn[data-region="MS中南大区"]       { background:#E74C3C; color:#fff; border-color:#E74C3C; opacity:0.65; }
-.region-btn[data-region="MS中南大区"]:hover,
-.region-btn[data-region="MS中南大区"].active { opacity:1.0; box-shadow:0 2px 8px rgba(231,76,60,0.45); }
-.region-btn[data-region="WE美西大区"]       { background:#3498DB; color:#fff; border-color:#3498DB; opacity:0.65; }
-.region-btn[data-region="WE美西大区"]:hover,
-.region-btn[data-region="WE美西大区"].active { opacity:1.0; box-shadow:0 2px 8px rgba(52,152,219,0.45); }
-.region-btn[data-region="TX德州大区"]        { background:#F39C12; color:#fff; border-color:#F39C12; opacity:0.65; }
-.region-btn[data-region="TX德州大区"]:hover,
-.region-btn[data-region="TX德州大区"].active  { opacity:1.0; box-shadow:0 2px 8px rgba(243,156,18,0.45); }
-.region-btn[data-region="NE东北大区"]       { background:#2ECC71; color:#fff; border-color:#2ECC71; opacity:0.65; }
-.region-btn[data-region="NE东北大区"]:hover,
-.region-btn[data-region="NE东北大区"].active { opacity:1.0; box-shadow:0 2px 8px rgba(46,204,113,0.45); }
-.region-btn[data-region="GL大湖大区"]       { background:#9B59B6; color:#fff; border-color:#9B59B6; opacity:0.65; }
-.region-btn[data-region="GL大湖大区"]:hover,
-.region-btn[data-region="GL大湖大区"].active { opacity:1.0; box-shadow:0 2px 8px rgba(155,89,182,0.45); }
-.region-btn[data-region="Ground项目部"]       { background:#1ABC9C; color:#fff; border-color:#1ABC9C; opacity:0.65; }
-.region-btn[data-region="Ground项目部"]:hover,
-.region-btn[data-region="Ground项目部"].active { opacity:1.0; box-shadow:0 2px 8px rgba(26,188,156,0.45); }
-.region-btn:not(.active):hover { opacity:0.85; }
+/* Inactive: white bg + colored left bar */
+.region-btn.all-btn                         { border-left-color: #6C7A89; }
+.region-btn[data-region="MS中南大区"]       { border-left-color: #C0392B; }
+.region-btn[data-region="WE美西大区"]       { border-left-color: #2980B9; }
+.region-btn[data-region="TX德州大区"]       { border-left-color: #D35400; }
+.region-btn[data-region="NE东北大区"]       { border-left-color: #27AE60; }
+.region-btn[data-region="GL大湖大区"]       { border-left-color: #8E44AD; }
+.region-btn[data-region="Ground项目部"]     { border-left-color: #1ABC9C; }
+.region-btn[data-region="FL佛州大区"]       { border-left-color: #E91E63; }
+.region-btn[data-region="PR波多黎各区"]     { border-left-color: #00897B; }
+
+/* Hover (inactive): subtle bg shift */
+.region-btn:hover:not(.active) { background: #f4f6f9; }
+
+/* Active: solid accent bg + white bold text */
+.region-btn.all-btn.active                         { background: #6C7A89; color: #fff; font-weight: 700; border: 1px solid #5D6D7E; }
+.region-btn[data-region="MS中南大区"].active       { background: #C0392B; color: #fff; font-weight: 700; border: 1px solid #A93226; }
+.region-btn[data-region="WE美西大区"].active       { background: #2980B9; color: #fff; font-weight: 700; border: 1px solid #1F6F8B; }
+.region-btn[data-region="TX德州大区"].active       { background: #D35400; color: #fff; font-weight: 700; border: 1px solid #A04000; }
+.region-btn[data-region="NE东北大区"].active       { background: #27AE60; color: #fff; font-weight: 700; border: 1px solid #1E8449; }
+.region-btn[data-region="GL大湖大区"].active       { background: #8E44AD; color: #fff; font-weight: 700; border: 1px solid #6C3483; }
+.region-btn[data-region="Ground项目部"].active     { background: #1ABC9C; color: #fff; font-weight: 700; border: 1px solid #16A085; }
+.region-btn[data-region="FL佛州大区"].active       { background: #E91E63; color: #fff; font-weight: 700; border: 1px solid #C2185B; }
+.region-btn[data-region="PR波多黎各区"].active     { background: #00897B; color: #fff; font-weight: 700; border: 1px solid #00695C; }
+
 .period-select {
-  padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px;
-  background: #fff; color: #334155; font-size: 13px; margin-left: auto;
+  padding: 6px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  color: #334155;
+  font-size: 13px;
+  margin-left: auto;
 }
-.kpi-row { display:flex; gap:16px; padding:20px 30px; flex-wrap:wrap; }
-.kpi-row.grid-2x4 { display: grid; grid-template-columns: repeat(4, 1fr); }
+
+.kpi-row { display:flex; gap:14px; padding:16px 30px; flex-wrap:wrap; justify-content:center; }
 .kpi-card {
-  flex:1; min-width:180px; background:#fff; border-radius:12px;
-  padding:18px 22px; border:1px solid #e2e8f0; position:relative;
-  overflow:hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-  transition: box-shadow 0.2s;
+  flex:1; min-width:180px;
+  background:#fff;
+  border-radius:10px;
+  padding:18px 22px;
+  border:1px solid #e2e8f0;
+  position:relative;
+  overflow:hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  transition: box-shadow 0.2s, transform 0.15s;
 }
-.kpi-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-.kpi-label { font-size:13px; color:#94a3b8; margin-bottom:8px; font-weight:500; }
-.kpi-value { font-size:26px; font-weight:700; color:#1a1a2e; }
+.kpi-card:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.08); transform: translateY(-1px); }
+.kpi-label { font-size:12px; color:#000000; margin-bottom:8px; font-weight:500; letter-spacing:0.3px; }
+.kpi-value { font-size:26px; font-weight:700; color:#000000; }
 .kpi-mom { font-size:12px; margin-top:8px; font-weight:500; }
-.kpi-mom.up { color:#E74C3C; }
-.kpi-mom.down { color:#2ECC71; }
+.kpi-mom.up { color:#2ECC71; }
+.kpi-mom.down { color:#E74C3C; }
 .info-bar {
-  background: #f5f7fa; border-radius: 8px; padding: 10px 20px;
-  margin: 18px 30px 0; font-size: 14px; color: #333;
-  display: flex; align-items: center; justify-content: space-around;
-  flex-wrap: wrap; gap: 8px 16px;
+  background: #f5f7fa;
+  border-radius: 10px;
+  padding: 10px 20px;
+  margin: 0 30px 16px;
+  font-size: 14px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  border: 1px solid #e2e8f0;
 }
 .info-bar .info-period { font-weight: 700; color: #2980B9; white-space: nowrap; }
 .info-bar .info-sep { color: #ccc; }
 .info-bar .info-val { font-weight: 600; color: #1a1a2e; }
+
 .charts-grid {
-  display:grid; grid-template-columns: 1fr 1fr; gap:18px; padding:0 30px 20px;
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:18px;
+  padding:0 30px 20px;
 }
 .chart-card {
-  background:#fff; border-radius:12px; padding:20px;
-  border:1px solid #e2e8f0; box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  background:#fff;
+  border-radius:10px;
+  padding:18px;
+  border:1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  transition: box-shadow 0.2s;
 }
+.chart-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.07); }
 .chart-card.full-width { grid-column:1/-1; }
-.chart-card h3 { font-size:15px; font-weight:600; margin-bottom:16px; color:#334155; }
-.chart-wrap { position:relative; height:280px; }
-.chart-wrap.tall { height:320px; }
-.table-section { padding:0 30px 30px; }
+.chart-card h3 { font-size:16px; font-weight:600; margin-bottom:14px; color:#1e293b; }
+.chart-wrap { position:relative; height:360px; }
+.chart-wrap.tall { height:400px; padding-top:24px; }
+/* Left-right layout for region compare */
+.region-compare-row { display:flex; gap:16px; align-items:stretch; }
+.region-compare-left { flex:0 0 40%; min-width:0; display:flex; flex-direction:column; }
+.region-compare-left .chart-wrap { flex:1; min-height:500px; }
+.region-compare-mid {
+  flex:0 0 25%; min-width:0;
+  background:#f8fafc;
+  border-radius:10px;
+  border:1px solid #e2e8f0;
+  padding:16px 18px;
+  display:flex; flex-direction:column; justify-content:center;
+}
+.region-compare-mid h4 {
+  font-size:13px; font-weight:600; color:#64748b;
+  margin-bottom:12px; padding-bottom:8px;
+  border-bottom:1px solid #e2e8f0;
+}
+.region-compare-right {
+  flex:0 0 50%; min-width:0;
+  display:flex; flex-direction:column;
+}
+.region-compare-right h4 { flex:0 0 auto; }
+.region-compare-right .chart-wrap { flex:1; min-height:0; }
+.region-chart-title {
+  font-size:13px; font-weight:600; color:#64748b;
+  margin-bottom:8px; padding-bottom:6px;
+  text-align:center;
+}
+.summary-item {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:6px 0; font-size:12px; color:#64748b;
+  border-bottom:1px solid #f1f5f9;
+}
+.summary-item:last-child { border-bottom:none; }
+.summary-item .s-label { white-space:nowrap; margin-right:8px; }
+.summary-item .s-value { font-weight:600; color:#1a1a2e; text-align:right; white-space:nowrap; }
+
+.table-section { padding:0 30px 20px; }
 .table-card {
-  background:#fff; border-radius:12px; padding:20px;
-  border:1px solid #e2e8f0; box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  background:#fff;
+  border-radius:10px;
+  padding:20px;
+  border:1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 .table-card h3 { font-size:15px; font-weight:600; margin-bottom:14px; color:#334155; }
 .export-btn {
-  padding:7px 18px; background:#3498DB; color:#fff; border:none;
-  border-radius:6px; cursor:pointer; font-size:13px; font-weight:500;
-  float:right; margin-bottom:12px; transition: background 0.2s;
+  padding:7px 18px;
+  background:#3498DB;
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  font-size:13px;
+  font-weight:500;
+  float:right;
+  margin-bottom:12px;
+  transition: background 0.2s;
 }
 .export-btn:hover { background:#2980B9; }
-.table-wrap { overflow-x:auto; max-height:420px; overflow-y:auto; clear:both; }
-table { width:100%; border-collapse:collapse; font-size:13px; }
+.table-wrap { overflow-x:auto; max-height:420px; overflow-y:auto; clear:both; border-radius:8px; }
+table { width:100%; table-layout:fixed; border-collapse:collapse; font-size:13px; }
 th {
-  background:#f8fafc; color:#64748b; padding:10px 14px; text-align:left;
-  position:sticky; top:0; z-index:1; border-bottom:2px solid #e2e8f0;
-  font-weight:600; white-space:nowrap;
+  background:#f1f5f9;
+  color:#000000;
+  padding:10px 14px;
+  text-align:center;
+  position:sticky; top:0; z-index:1;
+  border-bottom:2px solid #cbd5e1;
+  font-weight:600;
+  white-space:nowrap;
+  font-size:12px;
+  letter-spacing:0.3px;
 }
-td { padding:9px 14px; border-bottom:1px solid #f1f5f9; color:#334155; }
-tr:hover td { background:#f8fafc; }
+td { padding:9px 14px; border-bottom:1px solid #f1f5f9; color:#000000; text-align:center; }
+tr:nth-child(even) td { background:#fafbfc; }
+tr:hover td { background:#eef2f7; }
+th:nth-child(1), td:nth-child(1) { width:100px; }
+th:nth-child(2), td:nth-child(2) { width:120px; }
+.all-view th:nth-child(3), .all-view td:nth-child(3) { width:80px; }
+.region-view th:nth-child(3), .region-view td:nth-child(3) { width:180px; }
+th:nth-child(4), td:nth-child(4) { width:130px; }
+th:nth-child(5), td:nth-child(5) { width:100px; }
+th:nth-child(6), td:nth-child(6) { width:100px; }
 .text-right { text-align:right; }
 .hidden { display:none!important; }
-@media (max-width:1100px) { .charts-grid { grid-template-columns:1fr; } }
+
+@media (max-width:1100px) {
+  .charts-grid { grid-template-columns:1fr; }
+}
 
 /* Login overlay */
 .login-overlay {
@@ -193,49 +316,51 @@ tr:hover td { background:#f8fafc; }
   </div>
   <div class="filter-bar">
     <label>大区：</label>
-    <div id="regionBtns"></div>
+    <div id="regionBtns" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
     <span class="period-wrap">
       <label>周期：</label>
       <select class="period-select" id="periodFilter" onchange="refreshAll()"><option value="all">全部</option></select>
     </span>
   </div>
-  <div class="kpi-row grid-2x4" id="kpiRow"></div>
+  <div class="kpi-row" id="kpiRow"></div>
   <div class="info-bar" id="infoBar" style="display:none;"></div>
   <div class="charts-grid">
     <div class="chart-card full-width">
-      <h3>月度趋势</h3>
+      <h3>📈 月度总工时&付款总额趋势</h3>
       <div class="chart-wrap tall"><canvas id="chartTrend"></canvas></div>
     </div>
-    <div class="chart-card" id="cardRegionCompare">
-      <h3 id="titleRegionCompare">大区对比</h3>
-      <div class="chart-wrap"><canvas id="chartRegionCompare"></canvas></div>
-    </div>
-    <div class="chart-card" id="cardRegionPie">
-      <h3 id="titleRegionPie">大区成本占比</h3>
-      <div class="chart-wrap"><canvas id="chartRegionPie"></canvas></div>
-    </div>
     <div class="chart-card full-width">
-      <h3>劳务公司付款排名 TOP15</h3>
+      <h3 id="titleVendorRank">🏆 劳务公司费用排名 TOP15</h3>
       <div class="chart-wrap tall"><canvas id="chartVendorRank"></canvas></div>
     </div>
-    <div class="chart-card full-width">
-      <h3>劳务性价比散点图</h3>
-      <div class="chart-wrap tall"><canvas id="chartScatter"></canvas></div>
-      <div id="scatter-tip" style="margin-top:12px;padding:14px 18px;background:#f8fafc;border-radius:8px;font-size:13px;line-height:1.8;color:#334155;"></div>
-    </div>
-    <div class="chart-card full-width" id="cardGround">
-      <h3>Ground 项目部 - 四级组织拆解</h3>
-      <div class="chart-wrap"><canvas id="chartGround"></canvas></div>
+    <div class="chart-card full-width" id="cardRegionCompare">
+      <h3 id="titleRegionCompare">大区对比</h3>
+      <div class="region-compare-row">
+        <div class="region-compare-left">
+          <h4 class="region-chart-title" id="chartTitlePay">各大区付款金额（USD）</h4>
+          <div class="chart-wrap"><canvas id="chartRegionComparePay"></canvas></div>
+        </div>
+        <div class="region-compare-right" id="regionCompareHours">
+          <h4 class="region-chart-title" id="chartTitleHours">各大区总工时（h）</h4>
+          <div class="chart-wrap"><canvas id="chartRegionCompareHours"></canvas></div>
+        </div>
+        <div class="region-compare-mid" id="regionCompareSummary" style="display:none;">
+          <h4>数据摘要</h4>
+          <div id="summaryContent"></div>
+        </div>
+      </div>
     </div>
   </div>
   <div class="table-section">
     <div class="table-card">
-      <button class="export-btn" onclick="exportCSV()">导出 CSV</button>
-      <h3>劳务周期付款明细表</h3>
+      <button class="export-btn" onclick="exportCSV()">📥 导出 CSV</button>
+      <h3>📋 劳务周期付款明细表</h3>
       <div class="table-wrap">
-        <table id="detailTable"><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table>
+        <table id="detailTable">
+          <thead id="tableHead"></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
       </div>
-      <div style="text-align:right;margin-top:8px;font-size:12px;color:#94a3b8;">汇率：1 USD = 6.79 CNY（2026-06-25）</div>
     </div>
   </div>
 </div>
@@ -244,21 +369,30 @@ tr:hover td { background:#f8fafc; }
 <script src="/lib/chartjs-plugin-datalabels.min.js"></script>
 <script src="/lib/supabase.min.js"></script>
 <script>
+// Register chartjs-plugin-datalabels globally
+Chart.register(ChartDataLabels);
+
 // ==================== CONFIG ====================
 const SUPABASE_URL = 'https://fgibhpggdmimxjknqqah.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_7UouyWr5_y64QwrVd8qFig_8H3H0jt5';
 const API_BASE = window.location.origin;
 const EXCHANGE_RATE = 6.79;
+const EXCHANGE_DATE = '2026-06-25';
 
 const REGION_COLORS = {
-  "all": "#E67E22", "MS中南大区": "#E74C3C", "WE美西大区": "#3498DB",
-  "TX德州大区": "#F39C12", "NE东北大区": "#2ECC71", "GL大湖大区": "#9B59B6",
-  "Ground项目部": "#1ABC9C"
+  "all": "#E67E22",
+  "MS中南大区": "#E74C3C",
+  "WE美西大区": "#3498DB",
+  "TX德州大区": "#F39C12",
+  "NE东北大区": "#2ECC71",
+  "GL大湖大区": "#9B59B6",
+  "Ground项目部": "#1ABC9C",
+  "FL佛州大区": "#E91E63",
+  "PR波多黎各区": "#00897B"
 };
-const REGION_NAMES = ["MS中南大区", "WE美西大区", "TX德州大区", "NE东北大区", "GL大湖大区", "Ground项目部"];
+const REGION_NAMES = ["MS中南大区", "TX德州大区", "NE东北大区", "WE美西大区", "GL大湖大区", "FL佛州大区", "Ground项目部", "PR波多黎各区"];
 
 // ==================== STATE ====================
-// Safe init — don't crash the page if CDN fails
 let sb = null;
 try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e) { console.warn('Supabase 未加载，数据功能暂不可用'); }
 let USER = null;
@@ -272,23 +406,14 @@ let charts = {};
 function handleLogin() {
   console.log('[BP Dashboard] handleLogin triggered');
   var redirectUrl = API_BASE.replace(/\/+$/, '') + '/api/auth/feishu';
-  console.log('[BP Dashboard] Redirecting to:', redirectUrl);
-
   var btn = document.getElementById('loginBtn');
   var errEl = document.getElementById('loginError');
-  if (!btn) {
-    console.error('[BP Dashboard] loginBtn not found, force redirect');
-    window.location.href = redirectUrl;
-    return;
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="login-loading"></span>跳转中...';
   }
-  btn.disabled = true;
-  btn.innerHTML = '<span class="login-loading"></span>跳转中...';
   if (errEl) errEl.textContent = '';
-  
-  // Primary: window.location.href
   window.location.href = redirectUrl;
-  
-  // Fallback: if still on same page after 300ms, try replace
   setTimeout(function() {
     window.location.replace(redirectUrl);
   }, 300);
@@ -303,16 +428,8 @@ function handleLogout() {
 async function verifyToken(token) {
   try {
     var url = API_BASE.replace(/\/+$/, '') + '/api/auth/me';
-    console.log('[BP Dashboard] verifyToken calling:', url);
-    const res = await fetch(url, {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    console.log('[BP Dashboard] /api/auth/me status:', res.status);
-    if (!res.ok) {
-      const errBody = await res.text();
-      console.warn('[BP Dashboard] /api/auth/me error body:', errBody);
-      return null;
-    }
+    const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+    if (!res.ok) return null;
     const data = await res.json();
     return data.authenticated ? data.user : null;
   } catch (e) {
@@ -323,33 +440,17 @@ async function verifyToken(token) {
 
 // ==================== INIT ====================
 window.addEventListener('DOMContentLoaded', async function() {
-  console.log('[BP Dashboard] DOM ready, initializing...');
-
-  // Bind login button via addEventListener (more reliable than inline onclick)
   var loginBtn = document.getElementById('loginBtn');
-  if (loginBtn) {
-    loginBtn.addEventListener('click', handleLogin);
-    console.log('[BP Dashboard] loginBtn click handler bound');
-  } else {
-    console.warn('[BP Dashboard] loginBtn not found in DOM');
-  }
+  if (loginBtn) loginBtn.addEventListener('click', handleLogin);
 
-  // Helper: read cookie by name
   function getCookie(name) {
     var m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
     return m ? decodeURIComponent(m[1]) : null;
   }
 
-  // Read token: cookie first (set by OAuth callback), then localStorage (fallback)
   var token = getCookie('bp_jwt_token');
-  console.log('[BP Dashboard] cookie token:', token ? 'present (' + token.substring(0, 20) + '...)' : 'none');
+  if (!token) token = localStorage.getItem('bp_jwt_token');
 
-  if (!token) {
-    token = localStorage.getItem('bp_jwt_token');
-    console.log('[BP Dashboard] localStorage token:', token ? 'present (' + token.substring(0, 20) + '...)' : 'none');
-  }
-
-  // Fallback: URL hash for backward compatibility
   if (!token) {
     var hash = window.location.hash;
     if (hash && hash.indexOf('token=') !== -1) {
@@ -359,24 +460,18 @@ window.addEventListener('DOMContentLoaded', async function() {
   }
 
   if (token) {
-    console.log('[BP Dashboard] Verifying token...');
     var user = await verifyToken(token);
-    console.log('[BP Dashboard] verifyToken result:', user ? 'success' : 'FAILED');
     if (user) {
       USER = user;
-      // Sync token to both cookie and localStorage for reliability
       localStorage.setItem('bp_jwt_token', token);
       document.cookie = 'bp_jwt_token=' + token + '; Path=/; SameSite=Lax; Max-Age=604800';
       showDashboard();
-      console.log('[BP Dashboard] Dashboard shown for:', user.name || user.open_id);
     } else {
-      console.warn('[BP Dashboard] Token invalid or expired, clearing...');
       localStorage.removeItem('bp_jwt_token');
       showLogin();
     }
   } else {
     showLogin();
-    console.log('[BP Dashboard] Login overlay shown (no token)');
   }
 });
 
@@ -390,13 +485,9 @@ function showDashboard() {
   document.getElementById('appContent').style.display = '';
   document.getElementById('userName').textContent = USER.name || USER.open_id;
   document.getElementById('userRole').textContent = USER.role === 'admin' ? '管理员' : (USER.role === 'region_bp' ? '区域BP' : '游客');
-
-  // Show admin button for admin users
   if (USER.role === 'admin') {
     document.getElementById('adminBtn').style.display = '';
   }
-
-  // Render region buttons based on permissions
   renderRegionButtons();
   loadData();
 }
@@ -404,9 +495,7 @@ function showDashboard() {
 function renderRegionButtons() {
   const container = document.getElementById('regionBtns');
   container.innerHTML = '';
-
   const allowedRegions = USER.role === 'admin' ? ['all'].concat(REGION_NAMES) : ['all'].concat(USER.regions || []);
-
   allowedRegions.forEach(function(region) {
     const btn = document.createElement('button');
     btn.className = 'region-btn' + (region === 'all' ? ' all-btn' : '');
@@ -431,12 +520,10 @@ async function loadData() {
   }
   RECORDS = result.data || [];
 
-  // Derive PERIODS
   var periodsSet = {};
   RECORDS.forEach(function(r) { periodsSet[r.period] = true; });
   PERIODS = Object.keys(periodsSet).sort();
 
-  // Populate period filter
   var sel = document.getElementById('periodFilter');
   while (sel.options.length > 1) sel.remove(1);
   PERIODS.forEach(function(p) {
@@ -449,6 +536,12 @@ async function loadData() {
 }
 
 // ==================== HELPERS ====================
+function fmtLabel(v) {
+  if (v === null || v === undefined) return '';
+  var n = Number(v);
+  if (n >= 10000) return (n/10000).toFixed(1) + '万';
+  return n.toLocaleString('en-US', {maximumFractionDigits:0});
+}
 function fmtMoney(v) {
   if (Math.abs(v) >= 10000) return '$' + (v / 10000).toFixed(1) + '万';
   return '$' + v.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
@@ -461,60 +554,20 @@ function fmtCNY(v) {
   if (Math.abs(v) >= 10000) return '¥' + (v / 10000).toFixed(1) + '万';
   return '¥' + v.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
 }
-function fmtLabel(v) {
-  if (v === null || v === undefined) return '';
-  var n = Number(v);
-  if (n >= 10000) return (n/10000).toFixed(1) + '万';
-  return n.toLocaleString('en-US', {maximumFractionDigits:0});
-}
 function getCtx(id) {
   var el = document.getElementById(id);
-  return el ? el.getContext('2d') : null;
+  if (!el) { console.error('Canvas not found:', id); return null; }
+  return el.getContext('2d');
 }
 function destroyChart(key) {
   if (charts[key]) { charts[key].destroy(); delete charts[key]; }
 }
 
-// Filter records by current selection
-function filtered() {
-  var recs = RECORDS;
-  if (currentRegion !== 'all') recs = recs.filter(function(r) { return r.region === currentRegion; });
-  if (currentPeriod !== 'all') recs = recs.filter(function(r) { return r.period === currentPeriod; });
-  return recs;
-}
-function filteredLatest() {
-  var latest = PERIODS[PERIODS.length-1];
-  var recs = RECORDS.filter(function(r) { return r.period === latest; });
-  if (currentRegion !== 'all') recs = recs.filter(function(r) { return r.region === currentRegion; });
-  return recs;
-}
-
-function selectRegion(region) {
-  currentRegion = region;
-  document.querySelectorAll('.region-btn').forEach(function(btn) {
-    btn.classList.toggle('active', btn.dataset.region === region);
-  });
-  refreshAll();
-}
-
-function refreshAll() {
-  currentPeriod = document.getElementById('periodFilter').value;
-  renderKPI();
-  renderTrend();
-  renderRegionCompare();
-  renderRegionPie();
-  renderVendorRank();
-  renderScatter();
-  renderGround();
-  renderTable();
-  document.getElementById('updateTime').textContent = '数据截至：' + PERIODS[PERIODS.length-1];
-}
-
 // ==================== KPI ====================
-function computeKPI(recs) {
+function computeKPI(records) {
   var vendors = {};
   var payment = 0, hours = 0;
-  recs.forEach(function(r) { vendors[r.vendor] = true; payment += r.payment; hours += r.hours; });
+  records.forEach(function(r) { vendors[r.vendor] = true; payment += r.payment; hours += r.hours; });
   var vlen = Object.keys(vendors).length;
   return {
     companies: vlen,
@@ -526,348 +579,745 @@ function computeKPI(recs) {
 }
 
 function renderKPI() {
-  var recs = filtered();
-  var latestRecs = filteredLatest();
-  var kr = computeKPI(recs);
-  var lk = computeKPI(latestRecs);
-  var latestCNY = Math.round(lk.payment * EXCHANGE_RATE * 100) / 100;
-  var accent = REGION_COLORS[currentRegion] || '#95A5A6';
+  var recs = RECORDS;
+  if (currentPeriod !== 'all') recs = recs.filter(function(r) { return r.period === currentPeriod; });
+  if (currentRegion !== 'all') recs = recs.filter(function(r) { return r.region === currentRegion; });
 
-  // MoM for latest period
-  var momPayment = null, momHours = null;
-  if (PERIODS.length >= 2) {
-    var curP = PERIODS[PERIODS.length-1], preP = PERIODS[PERIODS.length-2];
-    var curR = RECORDS.filter(function(r) { return r.period===curP && (currentRegion==='all'||r.region===currentRegion); });
-    var preR = RECORDS.filter(function(r) { return r.period===preP && (currentRegion==='all'||r.region===currentRegion); });
-    var cp = curR.reduce(function(s,r) { return s+r.payment; },0);
-    var pp = preR.reduce(function(s,r) { return s+r.payment; },0);
-    var ch = curR.reduce(function(s,r) { return s+r.hours; },0);
-    var ph = preR.reduce(function(s,r) { return s+r.hours; },0);
-    if (pp) momPayment = Math.round((cp-pp)/pp*1000)/10;
-    if (ph) momHours = Math.round((ch-ph)/ph*1000)/10;
+  var kr = computeKPI(recs);
+  var latestPeriod = PERIODS[PERIODS.length - 1];
+  var latestRecs = RECORDS;
+  if (currentRegion !== 'all') latestRecs = latestRecs.filter(function(r) { return r.region === currentRegion; });
+  latestRecs = latestRecs.filter(function(r) { return r.period === latestPeriod; });
+  var latestKPI = computeKPI(latestRecs);
+
+  // MoM: only calculate when a specific period is selected
+  var momPayment = null, momHours = null, momAvgCost = null, momAvgHours = null, momCompanies = null;
+  var showMom = currentPeriod !== 'all';
+  if (showMom) {
+    var idx = PERIODS.indexOf(currentPeriod);
+    if (idx > 0) {
+      var prevPeriod = PERIODS[idx - 1];
+      var curRecs = RECORDS.filter(function(r) { return r.period === currentPeriod; });
+      var preRecs = RECORDS.filter(function(r) { return r.period === prevPeriod; });
+      if (currentRegion !== 'all') {
+        curRecs = curRecs.filter(function(r) { return r.region === currentRegion; });
+        preRecs = preRecs.filter(function(r) { return r.region === currentRegion; });
+      }
+      var curP = curRecs.reduce(function(s,r) { return s+r.payment; }, 0);
+      var preP = preRecs.reduce(function(s,r) { return s+r.payment; }, 0);
+      var curH = curRecs.reduce(function(s,r) { return s+r.hours; }, 0);
+      var preH = preRecs.reduce(function(s,r) { return s+r.hours; }, 0);
+      var curV = {}; curRecs.forEach(function(r) { curV[r.vendor] = true; }); curV = Object.keys(curV).length;
+      var preV = {}; preRecs.forEach(function(r) { preV[r.vendor] = true; }); preV = Object.keys(preV).length;
+
+      if (preV) momCompanies = Math.round((curV-preV)/preV*1000)/10;
+      if (preP) momPayment = Math.round((curP-preP)/preP*1000)/10;
+      if (preH) momHours = Math.round((curH-preH)/preH*1000)/10;
+      if (preP && preV && curV) {
+        var curAC = curP / curV, preAC = preP / preV;
+        if (preAC) momAvgCost = Math.round((curAC-preAC)/preAC*1000)/10;
+        var curAH = curH / curV, preAH = preH / preV;
+        if (preAH) momAvgHours = Math.round((curAH-preAH)/preAH*1000)/10;
+      }
+    }
   }
 
   var cards = [
-    { label:'累计合作劳务数', value: lk.companies, unit:'家', color:'#95A5A6' },
-    { label:'累计付款总额 (USD)', value: kr.payment, unit:'USD', fmt:'money', mom:momPayment, color:'#E74C3C' },
-    { label:'累计付款总额 (CNY)', value: Math.round(kr.payment*EXCHANGE_RATE*100)/100, unit:'CNY', fmt:'cny', color:'#E67E22', rate:'汇率：1 USD = 6.79 CNY（2026-06-25）' },
-    { label:'最新周期付款(CNY)', value: latestCNY, unit:'CNY', fmt:'cny', color:'#E67E22' },
-    { label:'累计总工时', value: kr.hours, unit:'h', fmt:'hours', color:'#3498DB', mom:momHours },
-    { label:'最新周期工时', value: lk.hours, unit:'h', fmt:'hours', color:'#3498DB' },
-    { label:'劳务平均周期成本', value: kr.avgCost, unit:'USD', fmt:'money', color:'#F39C12' },
-    { label:'劳务平均周期工时', value: kr.avgHours, unit:'h', fmt:'hours', color:'#2ECC71' }
+    { label:'合作劳务数（家）',    value: kr.companies,   fmt:'num',   showMom: showMom, mom: momCompanies },
+    { label:'付款总额（USD）',     value: kr.payment,     fmt:'money', showMom: showMom, mom: momPayment },
+    { label:'总工时（h）',         value: kr.hours,       fmt:'hours', showMom: showMom, mom: momHours },
+    { label:'劳务平均成本（USD）', value: kr.avgCost,     fmt:'money', showMom: showMom, mom: momAvgCost },
+    { label:'劳务平均工时（h）',   value: kr.avgHours,    fmt:'hours', showMom: showMom, mom: momAvgHours }
   ];
 
+  var accentColor = REGION_COLORS[currentRegion] || '#95A5A6';
   var html = '';
   cards.forEach(function(c) {
     var display = c.value;
     if (c.fmt === 'money') display = fmtMoney(c.value);
-    else if (c.fmt === 'cny') display = fmtCNY(c.value);
-    else if (c.fmt === 'hours') display = fmtHours(c.value) + ' h';
-    else if (c.unit === '家') display = c.value + '家';
+    else if (c.fmt === 'hours') display = fmtHours(c.value);
+    else if (c.fmt === 'num') display = c.value;
 
-    var momHtml = c.mom !== null && c.mom !== undefined ? '<div class="kpi-mom ' + (c.mom>=0?'up':'down') + '">较上周期 ' + (c.mom>=0?'↑':'↓') + Math.abs(c.mom) + '%</div>' : '';
-    var rateHtml = c.rate ? '<div style="font-size:11px;color:#888;margin-top:4px;">' + c.rate + '</div>' : '';
-    html += '<div class="kpi-card" style="border-left:4px solid ' + accent + ';"><div class="kpi-label">' + c.label + '</div><div class="kpi-value" style="color:' + accent + '">' + display + '</div>' + momHtml + rateHtml + '</div>';
+    var momHtml = '';
+    if (c.showMom) {
+      if (c.mom !== null && c.mom !== undefined) {
+        var up = c.mom >= 0;
+        momHtml = '<div class="kpi-mom ' + (up?'up':'down') + '">较上周期 ' + (up?'↑':'↓') + ' ' + Math.abs(c.mom) + '%</div>';
+      } else {
+        momHtml = '<div class="kpi-mom" style="color:#000000;">较上周期 --</div>';
+      }
+    }
+    html += '<div class="kpi-card" style="border-left:4px solid ' + accentColor + ';"><div class="kpi-label">' + c.label + '</div><div class="kpi-value" style="color:#000000">' + display + '</div>' + momHtml + '</div>';
   });
-  document.getElementById('kpiRow').innerHTML = html;
 
-  // Info bar (all mode only)
-  var ib = document.getElementById('infoBar');
+  document.getElementById('kpiRow').innerHTML = html;
+  document.getElementById('kpiRow').className = 'kpi-row';
+
+  var infoBar = document.getElementById('infoBar');
   if (currentRegion === 'all') {
-    ib.style.display = '';
-    ib.innerHTML = '<span class="info-period">最新周期：' + PERIODS[PERIODS.length-1] + '</span><span class="info-sep">|</span>劳务数 <span class="info-val">' + lk.companies + '家</span><span class="info-sep">|</span>付款总额 <span class="info-val">' + fmtMoney(lk.payment) + '</span><span class="info-sep">|</span>总工时 <span class="info-val">' + fmtHours(lk.hours) + ' h</span><span class="info-sep">|</span>平均成本 <span class="info-val">' + fmtMoney(lk.avgCost) + '</span>';
+    infoBar.style.display = '';
+    infoBar.innerHTML = '<span class="info-period">最新周期：' + latestPeriod + '</span><span class="info-sep">|</span>劳务数 <span class="info-val">' + latestKPI.companies + '家</span><span class="info-sep">|</span>付款总额 <span class="info-val">' + fmtMoney(latestKPI.payment) + '</span><span class="info-sep">|</span>总工时（h） <span class="info-val">' + fmtHours(latestKPI.hours) + '</span><span class="info-sep">|</span>平均成本 <span class="info-val">' + fmtMoney(latestKPI.avgCost) + '</span><span class="info-sep">|</span>平均工时（h） <span class="info-val">' + fmtHours(latestKPI.avgHours) + '</span>';
   } else {
-    ib.style.display = 'none';
+    infoBar.style.display = 'none';
   }
 }
 
-// ==================== CHARTS ====================
+// ==================== CHART: Monthly Trend ====================
 function renderTrend() {
   destroyChart('trend');
   var ctx = getCtx('chartTrend'); if (!ctx) return;
-  var accent = REGION_COLORS[currentRegion] || '#3498DB';
 
   var payments = PERIODS.map(function(p) {
-    var r = RECORDS.filter(function(x) { return x.period===p && (currentRegion==='all'||x.region===currentRegion); });
-    return Math.round(r.reduce(function(s,x) { return s+x.payment; },0)*100)/100;
+    var recs = RECORDS.filter(function(r) { return r.period === p; });
+    if (currentRegion !== 'all') recs = recs.filter(function(r) { return r.region === currentRegion; });
+    return Math.round(recs.reduce(function(s,r) { return s+r.payment; }, 0)*100)/100;
   });
   var hours = PERIODS.map(function(p) {
-    var r = RECORDS.filter(function(x) { return x.period===p && (currentRegion==='all'||x.region===currentRegion); });
-    return Math.round(r.reduce(function(s,x) { return s+x.hours; },0)*100)/100;
-  });
-  var vendors = PERIODS.map(function(p) {
-    var r = RECORDS.filter(function(x) { return x.period===p && (currentRegion==='all'||x.region===currentRegion); });
-    var set = {}; r.forEach(function(x) { set[x.vendor] = true; }); return Object.keys(set).length;
+    var recs = RECORDS.filter(function(r) { return r.period === p; });
+    if (currentRegion !== 'all') recs = recs.filter(function(r) { return r.region === currentRegion; });
+    return Math.round(recs.reduce(function(s,r) { return s+r.hours; }, 0)*100)/100;
   });
 
-  charts.trend = new Chart(ctx, {
+  charts['trend'] = new Chart(ctx, {
     type: 'bar',
     data: {
       labels: PERIODS,
       datasets: [
-        { label:'付款总额(USD)', data:payments, backgroundColor:accent+'33', borderColor:accent, borderWidth:2, yAxisID:'y', order:2 },
-        { label:'总工时 (h)', data:hours, type:'line', borderColor:'#F39C12', backgroundColor:'#F39C1233', fill:false, yAxisID:'y1', order:1, tension:0.3 },
-        { label:'劳务公司数', data:vendors, type:'line', borderColor:'#2ECC71', backgroundColor:'#2ECC7133', fill:false, yAxisID:'y1', order:0, tension:0.3 }
+        {
+          label: '付款总额(USD)',
+          data: payments,
+          backgroundColor: '#2980B9',
+          borderColor: '#2980B9',
+          borderWidth: 2,
+          yAxisID: 'y',
+          order: 2,
+          datalabels: {
+            display: function(ctx) {
+              if (!ctx.dataset.data[ctx.dataIndex]) return false;
+              var n = ctx.dataset.data.length;
+              if (n > 12 && ctx.dataIndex % 2 !== 0) return false;
+              return true;
+            },
+            anchor: 'end', align: 'end', offset: 4, clamp: true,
+            color: '#000000',
+            font: { weight: 'bold', size: 10 },
+            formatter: function(v) { return '$' + v.toLocaleString(); }
+          }
+        },
+        {
+          label: '总工时 (h)',
+          data: hours,
+          type: 'line',
+          borderColor: '#F39C12',
+          backgroundColor: '#F39C12',
+          fill: false,
+          yAxisID: 'y1',
+          order: 1,
+          tension: 0.3,
+          pointBackgroundColor: '#F39C12',
+          datalabels: {
+            display: function(ctx) {
+              if (!ctx.dataset.data[ctx.dataIndex]) return false;
+              var n = ctx.dataset.data.length;
+              if (n > 12 && ctx.dataIndex % 2 !== 0) return false;
+              return true;
+            },
+            anchor: 'end', clamp: true,
+            align: function(ctx) {
+              if (currentRegion === 'TX德州大区' && ctx.dataIndex === 4) return 30;
+              if (currentRegion === 'FL佛州大区') return 'top';
+              return 45;
+            },
+            offset: function(ctx) {
+              if (currentRegion === 'TX德州大区' && ctx.dataIndex === 4) return 20;
+              if (currentRegion === 'FL佛州大区') return 8;
+              return 12;
+            },
+            color: '#000000',
+            font: { weight: 'bold', size: 10 },
+            formatter: function(v) { return v.toLocaleString() + 'h'; }
+          }
+        }
       ]
     },
     options: {
-      responsive:true, maintainAspectRatio:false,
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: { padding: { top: 24, right: 32, bottom: 4, left: 32 } },
       plugins: {
-        legend: { position:'top', labels:{usePointStyle:true, padding:16, font:{size:12}} },
-        tooltip: { callbacks: { label: function(c) { if(c.dataset.label.includes('付款')) return ['$'+c.raw.toLocaleString(), '≈ ¥'+Math.round(c.raw*EXCHANGE_RATE).toLocaleString()]; if(c.dataset.label.includes('工时')) return c.raw.toLocaleString()+'h'; return c.raw+'家'; } } },
-        datalabels: {
-          anchor:'end', align:'top', offset:4, font:{weight:'bold',size:11},
-          color: function(c) { return c.dataset.label.includes('公司') ? 'transparent' : (c.dataset.borderColor||'#333'); },
-          formatter: function(v,c) { if(c.dataset.label.includes('公司')) return ''; return c.dataset.data.length>10&&c.dataIndex%2!==0 ? '' : fmtLabel(v); }
-        }
+        legend: { position: 'top', labels: { usePointStyle:true, padding:16, font:{size:12}, color:'#2C3E50' } },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              var v = ctx.raw;
+              if (ctx.dataset.label.includes('付款')) return ['付款总额: $' + v.toLocaleString(), '≈ ¥' + Math.round(v * EXCHANGE_RATE).toLocaleString('en-US')];
+              return '总工时: ' + v.toLocaleString() + 'h';
+            }
+          }
+        },
+        datalabels: { display: false }
       },
       scales: {
-        y: { type:'linear', position:'left', title:{display:true,text:'付款金额(USD)'}, grid:{color:'#f0f0f0'} },
-        y1: { type:'linear', position:'right', title:{display:true,text:'工时 / 公司数'}, grid:{drawOnChartArea:false} },
-        x: { grid:{color:'#f0f0f0'} }
+        y:  { type:'linear', position:'left', title:{display:true,text:'付款金额(USD)',color:'#4A5568'}, grid:{color:'#E8ECF1'}, ticks:{color:'#4A5568'} },
+        y1: { type:'linear', position:'right', title:{display:true,text:'总工时(h)',color:'#4A5568'}, grid:{drawOnChartArea:false}, ticks:{color:'#4A5568'} },
+        x:  { grid:{color:'#E8ECF1'}, ticks:{font:{size:12}, color:'#4A5568'} }
       }
     }
   });
 }
 
+// ==================== CHART: Region Compare ====================
 function renderRegionCompare() {
-  destroyChart('regionCompare');
-  var ctx = getCtx('chartRegionCompare'); if (!ctx) return;
+  destroyChart('regionComparePay');
+  destroyChart('regionCompareHours');
+  var ctxPay = getCtx('chartRegionComparePay');
+  var ctxHrs = getCtx('chartRegionCompareHours');
+  if (!ctxPay || !ctxHrs) return;
+
+  var card = document.getElementById('cardRegionCompare');
   var title = document.getElementById('titleRegionCompare');
+  var hoursBox = document.getElementById('regionCompareHours');
+  var midEl = document.getElementById('regionCompareSummary');
+  var leftEl = document.querySelector('.region-compare-left');
+  var rightEl = document.querySelector('.region-compare-right');
+  var titlePay = document.getElementById('chartTitlePay');
+  var titleHours = document.getElementById('chartTitleHours');
+
+  var latest = PERIODS[PERIODS.length-1];
+  var regions = REGION_NAMES.filter(function(r) {
+    return RECORDS.some(function(rec) { return rec.region === r && (currentPeriod==='all'||rec.period===currentPeriod); });
+  });
+  var payments = regions.map(function(r) {
+    var recs = RECORDS.filter(function(rec) { return rec.region === r && (currentPeriod==='all'||rec.period===currentPeriod); });
+    return Math.round(recs.reduce(function(s,rec) { return s+rec.payment; }, 0)*100)/100;
+  });
+  var hours = regions.map(function(r) {
+    var recs = RECORDS.filter(function(rec) { return rec.region === r && (currentPeriod==='all'||rec.period===currentPeriod); });
+    return Math.round(recs.reduce(function(s,rec) { return s+rec.hours; }, 0)*100)/100;
+  });
 
   if (currentRegion === 'all') {
-    title.textContent = '大区对比（最新周期：' + PERIODS[PERIODS.length-1] + '）';
-    var l = PERIODS[PERIODS.length-1];
-    var regions = REGION_NAMES.filter(function(r) { return RECORDS.some(function(x) { return x.region===r&&(currentPeriod==='all'||x.period===currentPeriod); }); });
-    var pmts = regions.map(function(r) {
-      var rr = RECORDS.filter(function(x) { return x.region===r&&(currentPeriod==='all'||x.period===l); });
-      return Math.round(rr.reduce(function(s,x) { return s+x.payment; },0)*100)/100;
-    });
-    var hrs = regions.map(function(r) {
-      var rr = RECORDS.filter(function(x) { return x.region===r&&(currentPeriod==='all'||x.period===l); });
-      return Math.round(rr.reduce(function(s,x) { return s+x.hours; },0)*100)/100;
+    title.textContent = '各大区付款金额&总工时对比';
+    if (titlePay) titlePay.style.display = '';
+    if (titleHours) titleHours.style.display = '';
+    if (midEl) midEl.style.display = 'none';
+    if (hoursBox) hoursBox.style.display = '';
+    if (leftEl) leftEl.style.flex = '0 0 50%';
+    if (rightEl) rightEl.style.flex = '0 0 50%';
+
+    var payTotal = payments.reduce(function(s,v) { return s+v; }, 0);
+
+    charts['regionComparePay'] = new Chart(ctxPay, {
+      type: 'bar',
+      data: {
+        labels: regions,
+        datasets: [{
+          label: '付款金额(USD)',
+          data: payments,
+          backgroundColor: regions.map(function(r) { return REGION_COLORS[r]; }),
+          borderColor: regions.map(function(r) { return REGION_COLORS[r]; }),
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        layout: { padding: { top: 35 } },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: function(ctx) { return ['$' + ctx.raw.toLocaleString(), '≈ ¥' + Math.round(ctx.raw * EXCHANGE_RATE).toLocaleString('en-US')]; } } },
+          datalabels: {
+            display: 'auto', anchor: 'end', align: 'top', offset: 4, clamp: true,
+            font: { weight: 'bold', size: regions.length > 8 ? 10 : 12 },
+            color: '#333',
+            formatter: function(v) {
+              var pct = payTotal ? ((v/payTotal)*100).toFixed(1) : '0';
+              return ['$' + v.toLocaleString('en-US', {maximumFractionDigits:0}), '占比：' + pct + '%'];
+            }
+          }
+        },
+        scales: {
+          y: { type:'linear', title:{display:true,text:'付款金额(USD)',color:'#4A5568'}, grid:{color:'#E8ECF1'}, ticks:{color:'#4A5568'} },
+          x: { grid:{color:'#E8ECF1'}, ticks:{font:{size: regions.length > 8 ? 11 : 12}, color:'#4A5568'} }
+        }
+      }
     });
 
-    charts.regionCompare = new Chart(ctx, {
-      type:'bar', data:{ labels:regions, datasets:[
-        { label:'付款总额(USD)', data:pmts, backgroundColor:regions.map(function(r){return REGION_COLORS[r]+'D9';}), borderColor:regions.map(function(r){return REGION_COLORS[r];}), borderWidth:2, yAxisID:'y' },
-        { label:'总工时(h)', data:hrs, backgroundColor:regions.map(function(r){return REGION_COLORS[r]+'D9';}), borderColor:regions.map(function(r){return REGION_COLORS[r];}), borderWidth:2, yAxisID:'y1' }
-      ]},
-      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{labels:{usePointStyle:true}}, tooltip:{callbacks:{label:function(c){if(c.dataset.label.includes('付款')) return ['$'+c.raw.toLocaleString(), '≈ ¥'+Math.round(c.raw*EXCHANGE_RATE).toLocaleString()]; return c.raw.toLocaleString()+'h';}}}, datalabels:{anchor:'end',align:'end',offset:2,font:{weight:'bold',size:10},color:'#333',formatter:function(v){return fmtLabel(v);}} }, scales:{ y:{type:'linear',position:'left',title:{display:true,text:'付款金额(USD)'},grid:{color:'#f0f0f0'}}, y1:{type:'linear',position:'right',title:{display:true,text:'工时(h)'},grid:{drawOnChartArea:false}}, x:{grid:{color:'#f0f0f0'}} } }
+    var hrsTotal = hours.reduce(function(s,v) { return s+v; }, 0);
+
+    charts['regionCompareHours'] = new Chart(ctxHrs, {
+      type: 'bar',
+      data: {
+        labels: regions,
+        datasets: [{
+          label: '总工时(h)',
+          data: hours,
+          backgroundColor: regions.map(function(r) { return REGION_COLORS[r]; }),
+          borderColor: regions.map(function(r) { return REGION_COLORS[r]; }),
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        layout: { padding: { top: 35 } },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: function(ctx) { return ctx.raw.toLocaleString() + 'h'; } } },
+          datalabels: {
+            display: 'auto', anchor: 'end', align: 'top', offset: 4, clamp: true,
+            font: { weight: 'bold', size: regions.length > 8 ? 10 : 12 },
+            color: '#333',
+            formatter: function(v) {
+              var pct = hrsTotal ? ((v/hrsTotal)*100).toFixed(1) : '0';
+              return [v.toLocaleString('en-US', {maximumFractionDigits:0}) + 'h', '占比：' + pct + '%'];
+            }
+          }
+        },
+        scales: {
+          y: { type:'linear', title:{display:true,text:'总工时(h)',color:'#4A5568'}, grid:{color:'#E8ECF1'}, ticks:{color:'#4A5568'} },
+          x: { grid:{color:'#E8ECF1'}, ticks:{font:{size: regions.length > 8 ? 11 : 12}, color:'#4A5568'} }
+        }
+      }
     });
+
   } else {
-    title.textContent = currentRegion + ' - 四级组织付款对比';
-    var recs = RECORDS.filter(function(r){return r.region===currentRegion;});
-    if (currentPeriod!=='all') recs = recs.filter(function(r){return r.period===currentPeriod;});
-    var l4m = {}; recs.forEach(function(r){ var k=r.level4||'(未分类)'; l4m[k]=(l4m[k]||0)+r.payment; });
-    var entries = Object.entries(l4m).sort(function(a,b){return b[1]-a[1];});
-    var labels = entries.map(function(e){return e[0];});
-    var data = entries.map(function(e){return Math.round(e[1]*100)/100;});
-    var color = REGION_COLORS[currentRegion]||'#3498DB';
-
-    if (labels.length===0||(labels.length===1&&labels[0]==='(未分类)')) {
-      title.textContent = currentRegion + ' - 月度趋势';
-      var monthly = PERIODS.map(function(p){ var rr=RECORDS.filter(function(r){return r.region===currentRegion&&r.period===p;}); return Math.round(rr.reduce(function(s,r){return s+r.payment;},0)*100)/100; });
-      charts.regionCompare = new Chart(ctx, { type:'bar', data:{ labels:PERIODS, datasets:[{label:'付款总额(USD)',data:monthly,backgroundColor:PERIODS.map(function(_,i){var al=['D9','B3','8C','66','4D'];return color+al[i%al.length];}),borderColor:color,borderWidth:2}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{usePointStyle:true}},tooltip:{callbacks:{label:function(c){return['$'+c.raw.toLocaleString(),'≈ ¥'+Math.round(c.raw*EXCHANGE_RATE).toLocaleString()];}}},datalabels:{anchor:'end',align:'end',offset:2,font:{weight:'bold',size:10},color:'#333',formatter:function(v){return fmtLabel(v);}}},scales:{y:{grid:{color:'#f0f0f0'}},x:{grid:{color:'#f0f0f0'}}}} });
+    // Region mode: chart (75%) + summary (25%)
+    if (currentRegion === 'Ground项目部') {
+      title.textContent = 'Ground 项目部 - 各四级组织费用对比';
     } else {
-      charts.regionCompare = new Chart(ctx, { type:'bar', data:{ labels:labels, datasets:[{label:'付款金额(USD)',data:data,backgroundColor:labels.map(function(_,i){return REGION_COLORS[REGION_NAMES[i%REGION_NAMES.length]]+'D9';}),borderColor:labels.map(function(_,i){return REGION_COLORS[REGION_NAMES[i%REGION_NAMES.length]];}),borderWidth:2}]}, options:{ responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{labels:{usePointStyle:true}},tooltip:{callbacks:{label:function(c){return['$'+c.raw.toLocaleString(),'≈ ¥'+Math.round(c.raw*EXCHANGE_RATE).toLocaleString()];}}},datalabels:{anchor:'end',align:'end',offset:4,font:{weight:'bold',size:10},color:'#333',formatter:function(v){return fmtLabel(v);}}},scales:{x:{grid:{color:'#f0f0f0'}}}} });
+      title.textContent = currentRegion + ' - 各四级组织费用对比';
+    }
+
+    if (titlePay) titlePay.style.display = 'none';
+    if (titleHours) titleHours.style.display = 'none';
+    if (hoursBox) hoursBox.style.display = 'none';
+    if (midEl) midEl.style.display = '';
+    if (leftEl) leftEl.style.flex = '0 0 75%';
+    if (rightEl) rightEl.style.display = 'none';
+
+    var chartWrapLeft = leftEl.querySelector('.chart-wrap');
+    if (currentRegion === 'Ground项目部') {
+      if (chartWrapLeft) chartWrapLeft.style.height = '80px';
+    } else {
+      if (chartWrapLeft) chartWrapLeft.style.height = '';
+    }
+
+    var recs = RECORDS.filter(function(r) { return r.region === currentRegion; });
+    if (currentPeriod !== 'all') recs = recs.filter(function(r) { return r.period === currentPeriod; });
+
+    var l4Map = {};
+    recs.forEach(function(r) {
+      var key = r.level4 || '(未分类)';
+      if (!l4Map[key]) l4Map[key] = 0;
+      l4Map[key] += r.payment;
+    });
+    var l4Entries = Object.entries(l4Map).sort(function(a,b) { return b[1]-a[1]; });
+    var labels = l4Entries.map(function(e) { return e[0]; });
+    var data = l4Entries.map(function(e) { return Math.round(e[1]*100)/100; });
+    var color = REGION_COLORS[currentRegion] || '#3498DB';
+
+    function rankColor(idx) {
+      if (idx === 0) return '#E74C3C';
+      if (idx <= 2) return '#F39C12';
+      if (idx <= 4) return '#F1C40F';
+      return '#3498DB';
+    }
+
+    if (labels.length === 0 || (labels.length === 1 && labels[0] === '(未分类)')) {
+      title.textContent = currentRegion + ' - 月度总工时&付款总额趋势';
+      var monthly = PERIODS.map(function(p) {
+        var rr = RECORDS.filter(function(r) { return r.region === currentRegion && r.period === p; });
+        return Math.round(rr.reduce(function(s,r) { return s+r.payment; }, 0)*100)/100;
+      });
+      charts['regionComparePay'] = new Chart(ctxPay, {
+        type: 'bar',
+        data: {
+          labels: PERIODS,
+          datasets: [{ label:'付款总额(USD)', data:monthly, backgroundColor:'#2980B9', borderColor:'#2980B9', borderWidth:2 }]
+        },
+        options: {
+          responsive:true, maintainAspectRatio:false,
+          layout:{ padding:{ top:30 } },
+          plugins:{ legend:{labels:{usePointStyle:true}}, tooltip:{ callbacks:{ label: function(ctx) { return ['$'+ctx.raw.toLocaleString(), '≈ ¥'+Math.round(ctx.raw*EXCHANGE_RATE).toLocaleString('en-US')]; } } }, datalabels:{ display:'auto', anchor:'end', align:'end', offset:6, clamp:true, font:{weight:'bold',size:10}, color:'#000000', formatter:function(v){ return fmtLabel(v); } } },
+          scales:{ y:{grid:{color:'#E8ECF1'}, ticks:{font:{size:12}, color:'#4A5568'}}, x:{grid:{color:'#E8ECF1'}, ticks:{font:{size:12}, color:'#4A5568'}} }
+        }
+      });
+      var totalMonth = monthly.reduce(function(s,v) { return s+v; }, 0);
+      var maxMonth = Math.max.apply(null, monthly);
+      var maxMonthIdx = monthly.indexOf(maxMonth);
+      var avgMonth = monthly.length ? totalMonth / monthly.length : 0;
+      var fmtUsdR = function(v) { return '$' + v.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0}); };
+      document.getElementById('summaryContent').innerHTML =
+        '<div class="summary-item"><span class="s-label">周期总数</span><span class="s-value">' + PERIODS.length + '个</span></div>' +
+        '<div class="summary-item"><span class="s-label">最高付款周期</span><span class="s-value">' + PERIODS[maxMonthIdx] + '&nbsp;(' + fmtUsdR(maxMonth) + ')</span></div>' +
+        '<div class="summary-item"><span class="s-label">累计付款</span><span class="s-value">' + fmtUsdR(totalMonth) + '</span></div>' +
+        '<div class="summary-item"><span class="s-label">月均付款</span><span class="s-value">' + fmtUsdR(avgMonth) + '</span></div>' +
+        '<div class="summary-item"><span class="s-label">最高月占比</span><span class="s-value">' + (totalMonth ? ((maxMonth/totalMonth)*100).toFixed(1) : '0') + '%</span></div>';
+    } else {
+      var bgColors = labels.map(function(_,i) { return rankColor(i); });
+      var borderColors = labels.map(function(_,i) { return rankColor(i); });
+      var maxData = Math.max.apply(null, data);
+      var isGround = (currentRegion === 'Ground项目部');
+      var chartConfig;
+
+      if (isGround) {
+        chartConfig = {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{ label:'付款金额(USD)', data:data, backgroundColor:bgColors, borderColor:borderColors, borderWidth:2, barPercentage:0.3, categoryPercentage:0.95 }]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false, indexAxis:'y',
+            layout:{ padding:{ right:50, top:5, bottom:5 } },
+            plugins:{
+              legend:{labels:{usePointStyle:true}},
+              tooltip:{ callbacks:{ label: function(ctx) { return ['$'+ctx.raw.toLocaleString(), '≈ ¥'+Math.round(ctx.raw*EXCHANGE_RATE).toLocaleString('en-US')]; } } },
+              datalabels:{
+                anchor:'end', align:'end', offset:2,
+                color:'#000000', font:{weight:'bold', size:10},
+                display: function(ctx) {
+                  var n = ctx.dataset.data.length;
+                  if (n > 15 && ctx.dataIndex % 2 !== 0) return false;
+                  return true;
+                },
+                formatter:function(v,ctx){
+                  var n=ctx.dataset.data.length;
+                  if(n>15&&ctx.dataIndex%2!==0) return '';
+                  var pct=ctx.dataset.data.reduce(function(s,d){return s+d;},0);
+                  pct=pct?((v/pct)*100).toFixed(1):'0';
+                  return ['$'+v.toLocaleString('en-US',{maximumFractionDigits:0}), '占比：'+pct+'%'];
+                }
+              }
+            },
+            scales:{ x:{grid:{color:'#E8ECF1'}, max: maxData ? Math.round(maxData*1.12*100)/100 : undefined, ticks:{color:'#4A5568'}}, y:{ticks:{font:{size:12}, color:'#4A5568'}} }
+          }
+        };
+      } else {
+        chartConfig = {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{ label:'付款金额(USD)', data:data, backgroundColor:bgColors, borderColor:borderColors, borderWidth:2, barPercentage:0.7, categoryPercentage:0.7 }]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false, indexAxis:'y',
+            layout:{ padding:{ right:50, top:5, bottom:5 } },
+            plugins:{
+              legend:{labels:{usePointStyle:true}},
+              tooltip:{ callbacks:{ label: function(ctx) { return ['$'+ctx.raw.toLocaleString(), '≈ ¥'+Math.round(ctx.raw*EXCHANGE_RATE).toLocaleString('en-US')]; } } },
+              datalabels:{
+                anchor:'end', align:'end', offset:4,
+                color:'#000000', font:{weight:'bold', size:11},
+                display: function(ctx) {
+                  var n = ctx.dataset.data.length;
+                  if (n > 15 && ctx.dataIndex % 2 !== 0) return false;
+                  return true;
+                },
+                formatter:function(v,ctx){
+                  var n=ctx.dataset.data.length;
+                  if(n>15&&ctx.dataIndex%2!==0) return '';
+                  var pct=ctx.dataset.data.reduce(function(s,d){return s+d;},0);
+                  pct=pct?((v/pct)*100).toFixed(1):'0';
+                  return ['$'+v.toLocaleString('en-US',{maximumFractionDigits:0}), '占比：'+pct+'%'];
+                }
+              }
+            },
+            scales:{ x:{grid:{color:'#E8ECF1'}, max: maxData ? Math.round(maxData*1.12*100)/100 : undefined, ticks:{color:'#4A5568'}}, y:{ticks:{font:{size:12}, color:'#4A5568'}} }
+          }
+        };
+      }
+      charts['regionComparePay'] = new Chart(ctxPay, chartConfig);
+
+      var totalL4 = data.reduce(function(s,v) { return s+v; }, 0);
+      var maxL4 = Math.max.apply(null, data);
+      var minL4 = Math.min.apply(null, data);
+      var maxIdxL4 = data.indexOf(maxL4);
+      var minIdxL4 = data.indexOf(minL4);
+      var avgL4 = data.length ? totalL4 / data.length : 0;
+      var maxPctL4 = totalL4 ? ((maxL4 / totalL4) * 100).toFixed(1) : '0';
+      var fmtUsdL = function(v) { return '$' + v.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0}); };
+      document.getElementById('summaryContent').innerHTML =
+        '<div class="summary-item"><span class="s-label">最高付款四级组织</span><span class="s-value">' + labels[maxIdxL4] + '&nbsp;(' + fmtUsdL(maxL4) + ')</span></div>' +
+        '<div class="summary-item"><span class="s-label">最低付款四级组织</span><span class="s-value">' + labels[minIdxL4] + '&nbsp;(' + fmtUsdL(minL4) + ')</span></div>' +
+        '<div class="summary-item"><span class="s-label">四级组织总数</span><span class="s-value">' + labels.length + '个</span></div>' +
+        '<div class="summary-item"><span class="s-label">平均付款金额</span><span class="s-value">' + fmtUsdL(avgL4) + '</span></div>' +
+        '<div class="summary-item"><span class="s-label">最高组织占比</span><span class="s-value">' + maxPctL4 + '%</span></div>';
     }
   }
 }
 
-function renderRegionPie() {
-  destroyChart('regionPie');
-  var ctx = getCtx('chartRegionPie'); if (!ctx) return;
-  var title = document.getElementById('titleRegionPie');
-
-  if (currentRegion === 'all') {
-    title.textContent = '大区成本占比';
-    var regions = REGION_NAMES.filter(function(r){ return RECORDS.some(function(x){return x.region===r&&(currentPeriod==='all'||x.period===currentPeriod);}); });
-    var data = regions.map(function(r){
-      var rr = RECORDS.filter(function(x){return x.region===r&&(currentPeriod==='all'||x.period===currentPeriod);});
-      return Math.round(rr.reduce(function(s,x){return s+x.payment;},0)*100)/100;
-    });
-    var total = data.reduce(function(s,v){return s+v;},0)||1;
-
-    charts.regionPie = new Chart(ctx, { type:'doughnut', data:{ labels:regions, datasets:[{ data:data, backgroundColor:regions.map(function(r){return REGION_COLORS[r]+'D9';}), borderColor:regions.map(function(r){return REGION_COLORS[r];}), borderWidth:2 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'right',labels:{usePointStyle:true,font:{size:11}}}, tooltip:{callbacks:{label:function(c){var pct=((c.raw/total)*100).toFixed(1); return [' '+c.label+': $'+c.raw.toLocaleString()+' ('+pct+'%)', '≈ ¥'+Math.round(c.raw*EXCHANGE_RATE).toLocaleString()];}}}, datalabels:{ color:'#fff', font:{weight:'bold',size:12}, formatter:function(v){ return fmtLabel(v)+'\n'+((v/total)*100).toFixed(1)+'%'; } } } } });
-  } else {
-    title.textContent = currentRegion + ' - 四级组织占比';
-    var recs = RECORDS.filter(function(r){return r.region===currentRegion;});
-    if (currentPeriod!=='all') recs = recs.filter(function(r){return r.period===currentPeriod;});
-    var l4m = {}; recs.forEach(function(r){ var k=r.level4||'(未分类)'; l4m[k]=(l4m[k]||0)+r.payment; });
-    var entries = Object.entries(l4m).sort(function(a,b){return b[1]-a[1];});
-    if (entries.length===0||(entries.length===1&&entries[0][0]==='(未分类)')) { document.getElementById('cardRegionPie').classList.add('hidden'); return; }
-    document.getElementById('cardRegionPie').classList.remove('hidden');
-
-    var labels = entries.map(function(e){return e[0];});
-    var data = entries.map(function(e){return Math.round(e[1]*100)/100;});
-    var total = data.reduce(function(s,v){return s+v;},0)||1;
-    var bg = labels.map(function(_,i){return REGION_COLORS[REGION_NAMES[i%REGION_NAMES.length]];});
-
-    charts.regionPie = new Chart(ctx, { type:'doughnut', data:{ labels:labels, datasets:[{ data:data, backgroundColor:bg.map(function(c){return c+'D9';}), borderColor:bg, borderWidth:1 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'right',labels:{usePointStyle:true,font:{size:11}}}, tooltip:{callbacks:{label:function(c){var pct=((c.raw/total)*100).toFixed(1); return [' '+c.label+': $'+c.raw.toLocaleString()+' ('+pct+'%)', '≈ ¥'+Math.round(c.raw*EXCHANGE_RATE).toLocaleString()];}}}, datalabels:{ color:'#fff', font:{weight:'bold',size:12}, formatter:function(v){ return fmtLabel(v)+'\n'+((v/total)*100).toFixed(1)+'%'; } } } } });
-  }
-}
-
+// ==================== CHART: Vendor TOP15 ====================
 function renderVendorRank() {
   destroyChart('vendorRank');
-  var ctx = getCtx('chartVendorRank'); if (!ctx) return;
-  var recs = filtered();
-  var vm = {};
-  recs.forEach(function(r){ vm[r.vendor] = (vm[r.vendor]||0)+r.payment; });
-  var sorted = Object.entries(vm).sort(function(a,b){return b[1]-a[1];}).slice(0,15);
-  var l = sorted.map(function(e){return e[0];}).reverse();
-  var d = sorted.map(function(e){return Math.round(e[1]*100)/100;}).reverse();
-  var base = currentRegion==='all' ? '#E74C3C' : REGION_COLORS[currentRegion];
+  var ctx = getCtx('chartVendorRank');
+  if (!ctx) return;
 
-  charts.vendorRank = new Chart(ctx, { type:'bar', data:{ labels:l, datasets:[{label:'付款金额(USD)',data:d,backgroundColor:base+'CC',borderColor:base,borderWidth:1,barThickness:18}]}, options:{ responsive:true,maintainAspectRatio:false,indexAxis:'y', plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return['$'+c.raw.toLocaleString(),'≈ ¥'+Math.round(c.raw*EXCHANGE_RATE).toLocaleString()];}}},datalabels:{anchor:'end',align:'end',offset:4,font:{weight:'bold',size:10},color:'#333',formatter:function(v){return fmtLabel(v);}}}, scales:{ x:{grid:{color:'#f0f0f0'},title:{display:true,text:'付款金额(USD)'}}, y:{grid:{color:'#f0f0f0'}} } } });
-}
-
-function renderScatter() {
-  destroyChart('scatter');
-  var ctx = getCtx('chartScatter'); if (!ctx) return;
   var recs = RECORDS;
-  if (currentPeriod!=='all') recs = recs.filter(function(r){return r.period===currentPeriod;});
+  if (currentRegion !== 'all') recs = recs.filter(function(r) { return r.region === currentRegion; });
+  if (currentPeriod !== 'all') recs = recs.filter(function(r) { return r.period === currentPeriod; });
 
-  var unique = {};
-  recs.forEach(function(r){ var k=r.vendor+'|'+r.region; if(!unique[k]) unique[k]={vendor:r.vendor,region:r.region,payment:0,hours:0}; unique[k].payment+=r.payment; unique[k].hours+=r.hours; });
-  var pts = Object.values(unique).map(function(u){ return { x:Math.round(u.hours*100)/100, y:Math.round(u.payment*100)/100, vendor:u.vendor, region:u.region }; });
+  var vendorMap = {};
+  recs.forEach(function(r) {
+    if (!vendorMap[r.vendor]) vendorMap[r.vendor] = 0;
+    vendorMap[r.vendor] += r.payment;
+  });
+  var sorted = Object.entries(vendorMap).sort(function(a,b) { return b[1]-a[1]; }).slice(0,15);
+  var labels = sorted.map(function(e) { return e[0]; });
+  var data = sorted.map(function(e) { return Math.round(e[1]*100)/100; });
 
-  var xV = pts.map(function(p){return p.x;}), yV = pts.map(function(p){return p.y;});
-  var datasets = REGION_NAMES.map(function(region){
-    var ip = pts.filter(function(p){return p.region===region;});
-    return { label:region, data:ip.map(function(p){return {x:p.x,y:p.y,vendor:p.vendor};}), backgroundColor:REGION_COLORS[region]+'99', borderColor:REGION_COLORS[region], borderWidth:1, pointRadius:4, pointHoverRadius:7 };
-  }).filter(function(ds){return ds.data.length>0;});
+  var rankColors = ['#E74C3C', '#F39C12', '#F39C12', '#F1C40F', '#F1C40F'];
+  var bgColors = sorted.map(function(_, i) {
+    return i < rankColors.length ? rankColors[i] : '#3498DB';
+  });
+  var borderColors = bgColors.slice();
 
-  charts.scatter = new Chart(ctx, { type:'scatter', data:{datasets:datasets}, options:{ responsive:true,maintainAspectRatio:false, plugins:{ legend:{position:'top',labels:{usePointStyle:true,padding:12}}, tooltip:{callbacks:{label:function(c){var d=c.raw; return [' '+d.vendor+'（'+d.region+'）: $'+d.y.toLocaleString()+' / '+d.x.toLocaleString()+'h', '≈ ¥'+Math.round(d.y*EXCHANGE_RATE).toLocaleString()];}}}, datalabels:{display:false} }, scales:{ x:{title:{display:true,text:'总工时(h)'},grid:{color:'#f0f0f0'}}, y:{title:{display:true,text:'付款金额(USD)'},grid:{color:'#f0f0f0'}} } } });
-
-  // Interpretation
-  if (pts.length>0) {
-    var n=pts.length, mx=pts.reduce(function(s,p){return s+p.x;},0)/n, my=pts.reduce(function(s,p){return s+p.y;},0)/n;
-    var sd=Math.sqrt(pts.reduce(function(s,p){return s+Math.pow(p.x-mx,2);},0)), sy=Math.sqrt(pts.reduce(function(s,p){return s+Math.pow(p.y-my,2);},0));
-    var highCost=pts.filter(function(p){return p.x<mx-sd*0.5&&p.y>my+sy*0.5;});
-    var highEff=pts.filter(function(p){return p.x>mx+sd*0.5&&p.y<my-sy*0.5;});
-    var h='<span style="font-weight:700;color:#1e293b;">散点图解读（当前筛选条件下共'+n+'家劳务公司）</span><br><br><b>高性价比建议关注：</b>';
-    if(highEff.length>0){ h+='<ul style="margin:4px 0 4px 16px;">'; highEff.slice(0,5).forEach(function(p){h+='<li>'+p.vendor+'（'+p.region+'）：'+p.x.toLocaleString()+'h / $'+p.y.toLocaleString()+'</li>';}); h+='</ul>'; } else h+='暂无明显高性价比异常点。';
-    h+='<br><b>重点关注对象（高付款低工时）：</b>';
-    if(highCost.length>0){ h+='<ul style="margin:4px 0 4px 16px;">'; highCost.slice(0,5).forEach(function(p){h+='<li>'+p.vendor+'（'+p.region+'）：'+p.x.toLocaleString()+'h / $'+p.y.toLocaleString()+'</li>';}); h+='</ul>'; } else h+='暂无明显异常高付款点。';
-    document.getElementById('scatter-tip').innerHTML = h;
+  var titleEl = document.getElementById('titleVendorRank');
+  if (titleEl) {
+    titleEl.textContent = currentRegion === 'all' ? '🏆 劳务公司费用排名 TOP15' : '劳务公司费用排名';
   }
-}
 
-function renderGround() {
-  destroyChart('ground');
-  if (currentRegion!=='all'&&currentRegion!=='Ground项目部') { document.getElementById('cardGround').classList.add('hidden'); return; }
-  document.getElementById('cardGround').classList.remove('hidden');
-  var ctx = getCtx('chartGround'); if (!ctx) return;
-  var recs = RECORDS.filter(function(r){return r.region==='Ground项目部';});
-  if (currentPeriod!=='all') recs = recs.filter(function(r){return r.period===currentPeriod;});
-  var l4m = {}; recs.forEach(function(r){ var k=r.level4||'(未分类)'; l4m[k]=(l4m[k]||0)+r.payment; });
-  var entries = Object.entries(l4m).sort(function(a,b){return b[1]-a[1];});
-
-  charts.ground = new Chart(ctx, { type:'bar', data:{ labels:entries.map(function(e){return e[0];}), datasets:[{label:'付款金额(USD)',data:entries.map(function(e){return Math.round(e[1]*100)/100;}),backgroundColor:'#1ABC9CCC',borderColor:'#1ABC9C',borderWidth:2}]}, options:{ responsive:true,maintainAspectRatio:false, plugins:{legend:{labels:{usePointStyle:true}},datalabels:{anchor:'end',align:'end',offset:2,font:{weight:'bold',size:10},color:'#333',formatter:function(v){return fmtLabel(v);}}}, scales:{y:{grid:{color:'#f0f0f0'}},x:{grid:{color:'#f0f0f0'}}} } });
+  charts['vendorRank'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: '付款金额(USD)',
+        data: data,
+        backgroundColor: bgColors,
+        borderColor: borderColors,
+        borderWidth: 1,
+        barThickness: 18
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      layout: { padding: { right: 50, top: 5, bottom: 5 } },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function(ctx) { return ['$' + ctx.raw.toLocaleString(), '≈ ¥' + Math.round(ctx.raw * EXCHANGE_RATE).toLocaleString('en-US')]; } } },
+        datalabels: {
+          display: function(ctx) {
+            var n = ctx.dataset.data.length;
+            if (n > 15 && ctx.dataIndex % 2 !== 0) return false;
+            return 'auto';
+          },
+          anchor: 'end', align: 'end', offset: 4, clamp: true,
+          color: '#000000',
+          font: function(ctx) {
+            var v = ctx.dataset.data[ctx.dataIndex];
+            var total = ctx.dataset.data.reduce(function(s,d) { return s+d; }, 0);
+            var pct = total ? ((v/total)*100).toFixed(1) : '0';
+            var txt = '$' + v.toLocaleString('en-US',{maximumFractionDigits:0}) + ' (' + pct + '%)';
+            if (txt.length > 18) return {weight:'bold', size:9};
+            if (txt.length > 15) return {weight:'bold', size:10};
+            return {weight:'bold', size:11};
+          },
+          formatter: function(v, ctx) {
+            var total = ctx.dataset.data.reduce(function(s,d) { return s+d; }, 0);
+            var pct = total ? ((v/total)*100).toFixed(1) : '0';
+            return '$' + v.toLocaleString('en-US',{maximumFractionDigits:0}) + ' (' + pct + '%)';
+          }
+        }
+      },
+      scales: {
+        x: { grid:{color:'#E8ECF1'}, title:{display:true,text:'付款金额(USD)',color:'#4A5568'}, ticks:{color:'#4A5568'} },
+        y: { grid:{color:'#E8ECF1'}, ticks:{font:{size:12}, color:'#4A5568'} }
+      }
+    }
+  });
 }
 
 // ==================== TABLE ====================
-var tableSortCol = 'period', tableSortAsc = false;
+var tableSortCol = 'payment';
+var tableSortAsc = false;
+var tableSortActive = false;
 
 function renderTable() {
-  var recs = filtered();
-  var rows = [];
+  var recs = RECORDS;
+  if (currentRegion !== 'all') recs = recs.filter(function(r) { return r.region === currentRegion; });
+  if (currentPeriod !== 'all') recs = recs.filter(function(r) { return r.period === currentPeriod; });
 
+  var rows = [];
   if (currentRegion === 'all') {
-    var am = {};
-    recs.forEach(function(r){
-      var k = r.period+'||'+r.region;
-      if (!am[k]) am[k] = { period:r.period, region:r.region, vendors:{}, payment:0, hours:0 };
-      am[k].vendors[r.vendor]=true; am[k].payment+=r.payment; am[k].hours+=r.hours;
+    var aggMap = {};
+    recs.forEach(function(r) {
+      var key = r.period + '||' + r.region;
+      if (!aggMap[key]) aggMap[key] = { period: r.period, region: r.region, vendors: {}, payment: 0, hours: 0 };
+      aggMap[key].vendors[r.vendor] = true;
+      aggMap[key].payment += r.payment;
+      aggMap[key].hours += r.hours;
     });
-    Object.values(am).forEach(function(d){
-      rows.push({ period:d.period, region:d.region, vendorCount:Object.keys(d.vendors).length, payment:d.payment, hours:d.hours, unitCost:d.hours>0?d.payment/d.hours:0 });
+    Object.values(aggMap).forEach(function(d) {
+      rows.push({
+        period: d.period, region: d.region,
+        vendorCount: Object.keys(d.vendors).length,
+        payment: d.payment, hours: d.hours,
+        unitCost: d.hours > 0 ? (d.payment / d.hours) : 0
+      });
     });
   } else {
-    var am2 = {};
-    recs.forEach(function(r){
-      var k = r.period+'||'+r.vendor;
-      if (!am2[k]) am2[k] = { period:r.period, region:r.region, vendor:r.vendor, payment:0, hours:0 };
-      am2[k].payment+=r.payment; am2[k].hours+=r.hours;
+    var aggMap2 = {};
+    recs.forEach(function(r) {
+      var key = r.period + '||' + r.vendor;
+      if (!aggMap2[key]) aggMap2[key] = { period: r.period, region: r.region, vendor: r.vendor, payment: 0, hours: 0 };
+      aggMap2[key].payment += r.payment;
+      aggMap2[key].hours += r.hours;
     });
-    Object.values(am2).forEach(function(d){
-      rows.push({ period:d.period, region:d.region, vendor:d.vendor, payment:d.payment, hours:d.hours, unitCost:d.hours>0?d.payment/d.hours:0 });
+    Object.values(aggMap2).forEach(function(d) {
+      rows.push({
+        period: d.period, region: d.region, vendor: d.vendor,
+        payment: d.payment, hours: d.hours,
+        unitCost: d.hours > 0 ? (d.payment / d.hours) : 0
+      });
     });
   }
 
-  rows.sort(function(a,b){ var va=a[tableSortCol]||'', vb=b[tableSortCol]||''; var cmp=va<vb?-1:va>vb?1:0; return tableSortAsc?cmp:-cmp; });
+  if (tableSortActive) {
+    var col = tableSortCol;
+    var asc = tableSortAsc;
+    rows.sort(function(a, b) {
+      var va = a[col], vb = b[col];
+      if (typeof va === 'string') va = va || '';
+      if (typeof vb === 'string') vb = vb || '';
+      var cmp = (va < vb ? -1 : va > vb ? 1 : 0);
+      if (!asc) cmp = -cmp;
+      if (cmp !== 0) return cmp;
+      if (col === 'period') return b.payment - a.payment;
+      return a.period < b.period ? -1 : 1;
+    });
+  } else {
+    rows.sort(function(a, b) {
+      if (a.period !== b.period) return a.period < b.period ? -1 : 1;
+      return b.payment - a.payment;
+    });
+  }
 
-  var colsAll = [
-    { key:'period', label:'周期', align:'left' },
-    { key:'region', label:'大区', align:'left' },
-    { key:'vendorCount', label:'劳务公司数', align:'right' },
-    { key:'payment', label:'原币付款金额(USD)', align:'right' },
-    { key:'cny', label:'本币付款金额(CNY)', align:'right' },
-    { key:'hours', label:'总工时(h)', align:'right' },
-    { key:'unitCost', label:'单位工时成本(USD/h)', align:'right' }
+  var COLS_ALL = [
+    { key: 'period',      label: '周期' },
+    { key: 'region',      label: '大区' },
+    { key: 'vendorCount', label: '劳务公司数（家）' },
+    { key: 'payment',     label: '原币付款金额(USD)' },
+    { key: 'hours',       label: '总工时(h)' },
+    { key: 'unitCost',    label: '单位工时成本(USD/h)' }
   ];
-  var colsRegion = [
-    { key:'period', label:'周期', align:'left' },
-    { key:'region', label:'大区', align:'left' },
-    { key:'vendor', label:'劳务公司', align:'left' },
-    { key:'payment', label:'原币付款金额(USD)', align:'right' },
-    { key:'cny', label:'本币付款金额(CNY)', align:'right' },
-    { key:'hours', label:'总工时(h)', align:'right' },
-    { key:'unitCost', label:'单位工时成本(USD/h)', align:'right' }
+  var COLS_REGION = [
+    { key: 'period',   label: '周期' },
+    { key: 'region',   label: '大区' },
+    { key: 'vendor',   label: '劳务公司' },
+    { key: 'payment',  label: '原币付款金额(USD)' },
+    { key: 'hours',    label: '总工时(h)' },
+    { key: 'unitCost', label: '单位工时成本(USD/h)' }
   ];
-  var cols = currentRegion==='all' ? colsAll : colsRegion;
+  var cols = currentRegion === 'all' ? COLS_ALL : COLS_REGION;
 
-  var headHtml = '<tr>' + cols.map(function(c){
-    var icon = c.key===tableSortCol ? (tableSortAsc?' ▲':' ▼') : '';
-    return '<th style="cursor:pointer;text-align:'+c.align+';" onclick="sortTable(\''+c.key+'\')">'+c.label+icon+'</th>';
+  var headHtml = '<tr>' + cols.map(function(col) {
+    var sortIcon = '';
+    if (tableSortActive && col.key === tableSortCol) sortIcon = tableSortAsc ? ' ▲' : ' ▼';
+    return '<th style="cursor:pointer;text-align:center;" onclick="tableSort(\'' + col.key + '\')">' + col.label + sortIcon + '</th>';
   }).join('') + '</tr>';
   document.getElementById('tableHead').innerHTML = headHtml;
+  document.getElementById('detailTable').className = currentRegion === 'all' ? 'all-view' : 'region-view';
 
-  var nf = function(v,d){ return v.toLocaleString('en-US',{minimumFractionDigits:d||0,maximumFractionDigits:d||0}); };
-  var body = '';
-  rows.forEach(function(r){
-    var cny = r.payment * EXCHANGE_RATE;
-    if (currentRegion==='all') {
-      body += '<tr><td>'+r.period+'</td><td><span style="color:'+(REGION_COLORS[r.region]||'#333')+';font-weight:500;">'+r.region+'</span></td><td style="text-align:right;">'+r.vendorCount+'</td><td style="text-align:right;font-weight:500;">$'+nf(r.payment,2)+'</td><td style="text-align:right;">¥'+nf(cny,2)+'</td><td style="text-align:right;">'+nf(r.hours,2)+'</td><td style="text-align:right;">'+r.unitCost.toFixed(2)+'</td></tr>';
+  var numFmt = function(v, dec) {
+    if (dec === 2) return v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return v.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  };
+
+  var bodyHtml = '';
+  rows.forEach(function(r) {
+    if (currentRegion === 'all') {
+      bodyHtml += '<tr><td>' + r.period + '</td><td><span style="color:#000000;font-weight:500;">' + r.region + '</span></td><td>' + r.vendorCount + '</td><td style="font-weight:500;">$' + numFmt(r.payment, 2) + '</td><td>' + numFmt(r.hours, 2) + '</td><td>' + r.unitCost.toFixed(2) + '</td></tr>';
     } else {
-      body += '<tr><td>'+r.period+'</td><td><span style="color:'+(REGION_COLORS[r.region]||'#333')+';font-weight:500;">'+r.region+'</span></td><td>'+(r.vendor||'')+'</td><td style="text-align:right;font-weight:500;">$'+nf(r.payment,2)+'</td><td style="text-align:right;">¥'+nf(cny,2)+'</td><td style="text-align:right;">'+nf(r.hours,2)+'</td><td style="text-align:right;">'+r.unitCost.toFixed(2)+'</td></tr>';
+      bodyHtml += '<tr><td>' + r.period + '</td><td><span style="color:#000000;font-weight:500;">' + r.region + '</span></td><td>' + (r.vendor||'') + '</td><td style="font-weight:500;">$' + numFmt(r.payment, 2) + '</td><td>' + numFmt(r.hours, 2) + '</td><td>' + r.unitCost.toFixed(2) + '</td></tr>';
     }
   });
-  document.getElementById('tableBody').innerHTML = body || '<tr><td colspan="'+cols.length+'" style="text-align:center;color:#aaa;padding:20px;">暂无数据</td></tr>';
+  var colspan = cols.length;
+  document.getElementById('tableBody').innerHTML = bodyHtml || '<tr><td colspan="' + colspan + '" style="text-align:center;color:#000000;padding:20px;">暂无数据</td></tr>';
 }
 
-function sortTable(col) {
-  if (tableSortCol===col) tableSortAsc=!tableSortAsc; else { tableSortCol=col; tableSortAsc=false; }
+function tableSort(col) {
+  if (!tableSortActive || tableSortCol !== col) {
+    tableSortActive = true;
+    tableSortCol = col;
+    tableSortAsc = true;
+  } else if (tableSortAsc) {
+    tableSortAsc = false;
+  } else {
+    tableSortActive = false;
+  }
   renderTable();
 }
 
 // ==================== CSV EXPORT ====================
 function exportCSV() {
-  var recs = filtered();
-  var BOM = '\uFEFF', lines = [];
+  var recs = RECORDS;
+  if (currentRegion !== 'all') recs = recs.filter(function(r) { return r.region === currentRegion; });
+  if (currentPeriod !== 'all') recs = recs.filter(function(r) { return r.period === currentPeriod; });
 
-  if (currentRegion==='all') {
-    lines.push('周期,大区,劳务公司数,原币付款金额(USD),本币付款金额(CNY),总工时(h),单位工时成本');
-    var am = {};
-    recs.forEach(function(r){ var k=r.period+'||'+r.region; if(!am[k]) am[k]={period:r.period,region:r.region,vendors:{},payment:0,hours:0}; am[k].vendors[r.vendor]=true; am[k].payment+=r.payment; am[k].hours+=r.hours; });
-    Object.values(am).sort(function(a,b){return b.period.localeCompare(a.period)||a.region.localeCompare(b.region);}).forEach(function(d){
-      lines.push([d.period, d.region, Object.keys(d.vendors).length, d.payment.toFixed(2), (d.payment*EXCHANGE_RATE).toFixed(2), d.hours.toFixed(2), (d.hours>0?d.payment/d.hours:0).toFixed(2)].join(','));
+  var BOM = '\uFEFF';
+  var csvRows = [];
+
+  if (currentRegion === 'all') {
+    csvRows.push('周期,大区,劳务公司数,原币付款金额(USD),总工时(h),单位工时成本(USD/h)');
+    var aggMap = {};
+    recs.forEach(function(r) {
+      var key = r.period + '||' + r.region;
+      if (!aggMap[key]) aggMap[key] = { period: r.period, region: r.region, vendors: {}, payment: 0, hours: 0 };
+      aggMap[key].vendors[r.vendor] = true;
+      aggMap[key].payment += r.payment;
+      aggMap[key].hours += r.hours;
+    });
+    Object.values(aggMap).sort(function(a,b) { return b.period.localeCompare(a.period) || a.region.localeCompare(b.region); }).forEach(function(d) {
+      var unitCost = d.hours > 0 ? (d.payment / d.hours).toFixed(2) : '0.00';
+      csvRows.push([d.period, d.region, Object.keys(d.vendors).length, d.payment.toFixed(2), d.hours.toFixed(2), unitCost].join(','));
     });
   } else {
-    lines.push('周期,大区,劳务公司,原币付款金额(USD),本币付款金额(CNY),总工时(h),单位工时成本');
-    var am2 = {};
-    recs.forEach(function(r){ var k=r.period+'||'+r.vendor; if(!am2[k]) am2[k]={period:r.period,region:r.region,vendor:r.vendor,payment:0,hours:0}; am2[k].payment+=r.payment; am2[k].hours+=r.hours; });
-    Object.values(am2).sort(function(a,b){return b.period.localeCompare(a.period)||a.vendor.localeCompare(b.vendor);}).forEach(function(d){
-      lines.push([d.period, d.region, '"'+d.vendor+'"', d.payment.toFixed(2), (d.payment*EXCHANGE_RATE).toFixed(2), d.hours.toFixed(2), (d.hours>0?d.payment/d.hours:0).toFixed(2)].join(','));
+    csvRows.push('周期,大区,劳务公司,原币付款金额(USD),总工时(h),单位工时成本(USD/h)');
+    var aggMap2 = {};
+    recs.forEach(function(r) {
+      var key = r.period + '||' + r.vendor;
+      if (!aggMap2[key]) aggMap2[key] = { period: r.period, region: r.region, vendor: r.vendor, payment: 0, hours: 0 };
+      aggMap2[key].payment += r.payment;
+      aggMap2[key].hours += r.hours;
+    });
+    Object.values(aggMap2).sort(function(a,b) { return b.period.localeCompare(a.period) || a.vendor.localeCompare(b.vendor); }).forEach(function(d) {
+      var unitCost = d.hours > 0 ? (d.payment / d.hours).toFixed(2) : '0.00';
+      csvRows.push([d.period, d.region, '"' + d.vendor + '"', d.payment.toFixed(2), d.hours.toFixed(2), unitCost].join(','));
     });
   }
 
-  var blob = new Blob([BOM+lines.join('\n')], {type:'text/csv;charset=utf-8'});
+  var blob = new Blob([BOM + csvRows.join('\n')], {type:'text/csv;charset=utf-8'});
   var url = URL.createObjectURL(blob);
-  var a = document.createElement('a'); a.href=url; a.download='劳务付款明细_'+(currentRegion==='all'?'全部':currentRegion)+'.csv'; a.click();
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = '劳务付款明细_' + (currentRegion==='all'?'全部':currentRegion) + '.csv';
+  a.click();
   URL.revokeObjectURL(url);
+}
+
+// ==================== REGION SELECT ====================
+function selectRegion(region) {
+  currentRegion = region;
+  document.querySelectorAll('.region-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.region === region);
+  });
+  refreshAll();
+}
+
+// ==================== REFRESH ALL ====================
+function refreshAll() {
+  currentPeriod = document.getElementById('periodFilter').value;
+  renderKPI();
+  renderTrend();
+  renderRegionCompare();
+  renderVendorRank();
+  renderTable();
+  var lastPeriod = PERIODS[PERIODS.length-1];
+  if (lastPeriod) {
+    document.getElementById('updateTime').textContent = '数据截至：' + lastPeriod;
+  }
 }
 </script>
 </body>
