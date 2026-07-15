@@ -63,7 +63,10 @@ body { font-family: -apple-system, 'Microsoft YaHei', sans-serif; background: #f
   <!-- 未登录 / 需要开通管理员 -->
   <div id="setupSection" class="card setup-form" style="display:none;">
     <h2>🔑 开通管理员权限</h2>
-    <p>你是 <strong id="setupUserName"></strong>（ID: <code id="setupOpenId"></code>），尚未开通管理员权限。</p>
+    <p>你是 <strong id="setupUserName"></strong>，你的 ID: <code id="setupOpenId"></code>
+      <button class="btn btn-outline btn-sm" onclick="copyMyId()" style="margin-left:8px;">复制我的ID</button>
+    </p>
+    <p class="section-note" style="margin-bottom:12px;">将上面的 ID 发给管理员，管理员会为你分配区域权限。</p>
     <div class="input-row" style="justify-content:center;">
       <input type="text" id="setupKeyInput" placeholder="请输入管理员 Setup Key" style="max-width:300px;">
       <button class="btn btn-primary" onclick="activateAdmin()">开通管理员</button>
@@ -77,10 +80,10 @@ body { font-family: -apple-system, 'Microsoft YaHei', sans-serif; background: #f
     <!-- 管理员列表 -->
     <div class="card">
       <h2>👑 超级管理员列表</h2>
-      <p class="section-note" style="margin-bottom:12px;">超级管理员可查看所有区域数据，并能管理其他用户的权限。</p>
+      <p class="section-note" style="margin-bottom:12px;">超级管理员可查看所有区域数据，并能管理其他用户的权限。添加时请输入用户的 union_id。</p>
       <div class="user-list" id="adminList"></div>
       <div class="input-row" style="margin-top:12px;">
-        <input type="text" id="newAdminInput" placeholder="输入用户的飞书 open_id">
+        <input type="text" id="newAdminInput" placeholder="输入用户的 union_id">
         <button class="btn btn-primary" onclick="addAdmin()">添加管理员</button>
       </div>
     </div>
@@ -88,7 +91,7 @@ body { font-family: -apple-system, 'Microsoft YaHei', sans-serif; background: #f
     <!-- 区域权限 -->
     <div class="card">
       <h2>🗺️ 区域权限配置</h2>
-      <p class="section-note" style="margin-bottom:12px;">为每个区域添加可查看该区域数据的 BP 用户（open_id）。</p>
+      <p class="section-note" style="margin-bottom:12px;">为每个区域添加可查看该区域数据的 BP 用户（union_id）。用户登录后可在本页查看自己的 union_id。</p>
       <div class="region-grid" id="regionGrid"></div>
     </div>
 
@@ -116,7 +119,7 @@ body { font-family: -apple-system, 'Microsoft YaHei', sans-serif; background: #f
 const API_BASE = window.location.origin;
 const SUPABASE_URL = 'https://fgibhpggdmimxjknqqah.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_7UouyWr5_y64QwrVd8qFig_8H3H0jt5';
-const REGIONS = ['MS中南大区','WE美西大区','TX德州大区','NE东北大区','GL大湖大区','Ground项目部'];
+const REGIONS = ['MS中南大区','WE美西大区','TX德州大区','NE东北大区','GL大湖大区','FL佛州大区','Ground项目部','PR波多黎各区'];
 
 let TOKEN = null;
 let USER = null;
@@ -146,7 +149,8 @@ window.addEventListener('DOMContentLoaded', async function() {
   }
 
   document.getElementById('notLoggedIn').style.display = 'none';
-  document.getElementById('userInfo').textContent = `${USER.name || USER.open_id} (${USER.role})`;
+  const myUnionId = USER.union_id || USER.open_id;
+  document.getElementById('userInfo').textContent = `${USER.name || USER.open_id} (${USER.role}) — ID: ${myUnionId}`;
 
   // Load permissions and render UI
   await loadPermissions();
@@ -207,7 +211,7 @@ function renderRegionGrid() {
         users.map(id => `<span class="user-tag">${escapeHtml(id)}<span class="remove" onclick="removeRegionUser('${escapeHtml(region)}','${escapeHtml(id)}')" title="移除">×</span></span>`).join('')
       }</div>
       <div class="input-row" style="margin-top:8px;">
-        <input type="text" id="input-${region}" placeholder="输入 open_id" style="font-size:12px;padding:6px 10px;">
+        <input type="text" id="input-${region}" placeholder="输入 union_id" style="font-size:12px;padding:6px 10px;">
         <button class="btn btn-primary btn-sm" onclick="addRegionUser('${escapeHtml(region)}')">添加</button>
       </div>
     </div>`;
@@ -326,6 +330,20 @@ function showToast(msg, type) {
   toast.textContent = msg;
   document.body.appendChild(toast);
   setTimeout(() => { toast.remove(); }, 3000);
+}
+
+function copyMyId() {
+  const myId = (USER && (USER.union_id || USER.open_id)) || '';
+  if (!myId) { showToast('无法获取ID', 'error'); return; }
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(myId).then(() => showToast('已复制: ' + myId));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = myId; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); showToast('已复制: ' + myId); }
+    catch(e) { showToast('复制失败，请手动选择: ' + myId, 'error'); }
+    ta.remove();
+  }
 }
 </script>
 </body>
