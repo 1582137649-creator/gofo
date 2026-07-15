@@ -39,21 +39,27 @@ function fetchPermissionsFromSupabase() {
       hostname: supabaseHost,
       path: '/rest/v1/bp_permissions?select=key,value',
       method: 'GET',
+      timeout: 3000,
       headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` },
     }, (resp) => {
       let body = '';
       resp.on('data', c => body += c);
       resp.on('end', () => {
-        const rows = JSON.parse(body);
-        const perms = {};
-        rows.forEach(row => { perms[row.key] = row.value; });
-        resolve({
-          admin_open_ids: perms.admin_open_ids || [],
-          region_permissions: perms.region_permissions || {},
-        });
+        try {
+          const rows = JSON.parse(body);
+          const perms = {};
+          rows.forEach(row => { perms[row.key] = row.value; });
+          resolve({
+            admin_open_ids: perms.admin_open_ids || [],
+            region_permissions: perms.region_permissions || {},
+          });
+        } catch (e) {
+          reject(new Error('Invalid Supabase response'));
+        }
       });
     });
     r.on('error', reject);
+    r.on('timeout', () => { r.destroy(); reject(new Error('Supabase request timeout (3s)')); });
     r.end();
   });
 }

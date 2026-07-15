@@ -10,7 +10,7 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
 const supabaseHost = supabaseUrl ? new URL(supabaseUrl).hostname : '';
 
-function supabaseRequest(path, method, body) {
+function supabaseRequest(reqPath, method, body) {
   return new Promise((resolve, reject) => {
     const headers = { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` };
     if (body) {
@@ -20,7 +20,7 @@ function supabaseRequest(path, method, body) {
     if (method === 'PATCH') headers['Prefer'] = 'return=representation';
     if (method === 'POST') headers['Prefer'] = 'return=representation';
 
-    const r = https.request({ hostname: supabaseHost, path, method, headers }, (resp) => {
+    const r = https.request({ hostname: supabaseHost, path: reqPath, method, headers, timeout: 3000 }, (resp) => {
       let b = '';
       resp.on('data', c => b += c);
       resp.on('end', () => {
@@ -29,6 +29,7 @@ function supabaseRequest(path, method, body) {
       });
     });
     r.on('error', reject);
+    r.on('timeout', () => { r.destroy(); reject(new Error('Supabase request timeout (3s)')); });
     if (body) r.write(JSON.stringify(body));
     r.end();
   });

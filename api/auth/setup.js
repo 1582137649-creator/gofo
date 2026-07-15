@@ -63,6 +63,7 @@ module.exports = async function handler(req, res) {
           hostname: new URL(supabaseUrl).hostname,
           path: '/rest/v1/bp_permissions?key=eq.admin_open_ids&select=value',
           method: 'GET',
+          timeout: 3000,
           headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` },
         }, (resp) => {
           let body = '';
@@ -75,6 +76,7 @@ module.exports = async function handler(req, res) {
           });
         });
         r.on('error', reject);
+        r.on('timeout', () => { r.destroy(); reject(new Error('Supabase timeout')); });
         r.end();
       });
 
@@ -109,6 +111,7 @@ module.exports = async function handler(req, res) {
           hostname: new URL(supabaseUrl).hostname,
           path: '/rest/v1/bp_permissions?key=eq.admin_open_ids',
           method: 'PATCH',
+          timeout: 3000,
           headers: {
             apikey: supabaseKey,
             Authorization: `Bearer ${supabaseKey}`,
@@ -122,6 +125,7 @@ module.exports = async function handler(req, res) {
           resp.on('end', () => resolve(resp.statusCode));
         });
         r.on('error', reject);
+        r.on('timeout', () => { r.destroy(); reject(new Error('Supabase write timeout')); });
         r.write(body);
         r.end();
       });

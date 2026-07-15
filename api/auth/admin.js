@@ -26,7 +26,7 @@ function getPermissionsFromFile() {
   return filePermissions;
 }
 
-function supabaseFetch(path, method, body) {
+function supabaseFetch(reqPath, method, body) {
   return new Promise((resolve, reject) => {
     const https = require('https');
     const headers = { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` };
@@ -35,7 +35,7 @@ function supabaseFetch(path, method, body) {
       headers['Content-Length'] = Buffer.byteLength(JSON.stringify(body));
     }
     if (method === 'PATCH') headers['Prefer'] = 'return=representation';
-    const r = https.request({ hostname: supabaseHost, path, method, headers }, (resp) => {
+    const r = https.request({ hostname: supabaseHost, path: reqPath, method, headers, timeout: 3000 }, (resp) => {
       let b = '';
       resp.on('data', c => b += c);
       resp.on('end', () => {
@@ -44,6 +44,7 @@ function supabaseFetch(path, method, body) {
       });
     });
     r.on('error', reject);
+    r.on('timeout', () => { r.destroy(); reject(new Error('Supabase request timeout (3s)')); });
     if (body) r.write(JSON.stringify(body));
     r.end();
   });
