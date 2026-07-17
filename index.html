@@ -523,6 +523,21 @@ async function loadData() {
     }
     RECORDS = result.data || [];
 
+    // Deduplicate: if table has both old and new records, keep only the latest (highest id)
+    // for each unique (region, period, vendor, level4, level5) combination
+    var dedupMap = {};
+    RECORDS.forEach(function(r) {
+      var key = r.region + '|' + r.period + '|' + r.vendor + '|' + (r.level4 || '') + '|' + (r.level5 || '');
+      if (!dedupMap[key] || r.id > dedupMap[key].id) {
+        dedupMap[key] = r;
+      }
+    });
+    var beforeDedup = RECORDS.length;
+    RECORDS = Object.values(dedupMap);
+    if (beforeDedup !== RECORDS.length) {
+      console.log('[BP Dashboard] Deduplicated:', beforeDedup, '->', RECORDS.length, 'records');
+    }
+
     // Region-based access control: filter records by user's allowed regions
     if (USER && USER.role === 'admin') {
       // Admin sees all data
