@@ -2,7 +2,7 @@
   "functions": {
     "api/import-data.js": {
       "memory": 512,
-      "maxDuration": 60
+      "maxDuration": 120
     },
     "api/**/*.js": {
       "memory": 256,
