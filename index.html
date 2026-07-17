@@ -814,8 +814,8 @@ function renderRegionCompare() {
           legend: { display: false },
           tooltip: { callbacks: { label: function(ctx) { return ['$' + ctx.raw.toLocaleString(), '≈ ¥' + Math.round(ctx.raw * EXCHANGE_RATE).toLocaleString('en-US')]; } } },
           datalabels: {
-            display: 'auto', anchor: 'end', align: 'top', offset: 4, clamp: true,
-            font: { weight: 'bold', size: regions.length > 8 ? 10 : 12 },
+            display: true, anchor: 'end', align: 'top', offset: 4, clamp: true,
+            font: { weight: 'bold', size: regions.length > 6 ? 9 : 12 },
             color: '#333',
             formatter: function(v) {
               var pct = payTotal ? ((v/payTotal)*100).toFixed(1) : '0';
@@ -851,8 +851,8 @@ function renderRegionCompare() {
           legend: { display: false },
           tooltip: { callbacks: { label: function(ctx) { return ctx.raw.toLocaleString() + 'h'; } } },
           datalabels: {
-            display: 'auto', anchor: 'end', align: 'top', offset: 4, clamp: true,
-            font: { weight: 'bold', size: regions.length > 8 ? 10 : 12 },
+            display: true, anchor: 'end', align: 'top', offset: 4, clamp: true,
+            font: { weight: 'bold', size: regions.length > 6 ? 9 : 12 },
             color: '#333',
             formatter: function(v) {
               var pct = hrsTotal ? ((v/hrsTotal)*100).toFixed(1) : '0';
