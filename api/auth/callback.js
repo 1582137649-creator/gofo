@@ -98,6 +98,7 @@ function getAppAccessToken() {
         hostname: 'open.feishu.cn',
         path: '/open-apis/auth/v3/app_access_token/internal',
         method: 'POST',
+        timeout: 5000,
         headers: {
           'Content-Type': 'application/json',
           'Content-Length': Buffer.byteLength(postData),
@@ -116,6 +117,7 @@ function getAppAccessToken() {
       }
     );
     req.on('error', reject);
+    req.on('timeout', () => { req.destroy(); reject(new Error('Feishu app_token request timeout (5s)')); });
     req.write(postData);
     req.end();
   });
@@ -129,6 +131,7 @@ function getFeishuUserInfo(userAccessToken) {
         hostname: 'open.feishu.cn',
         path: '/open-apis/authen/v1/user_info',
         method: 'GET',
+        timeout: 5000,
         headers: { Authorization: `Bearer ${userAccessToken}` },
       },
       (resp) => {
@@ -142,6 +145,7 @@ function getFeishuUserInfo(userAccessToken) {
       }
     );
     req.on('error', reject);
+    req.on('timeout', () => { req.destroy(); reject(new Error('Feishu user_info request timeout (5s)')); });
     req.end();
   });
 }
@@ -159,6 +163,8 @@ async function getRoleAndPages(openId, unionId) {
     'TX德州大区': 'tx_texas',
     'NE东北大区': 'ne_northeast',
     'GL大湖大区': 'gl_lakes',
+    'FL佛州大区': 'fl_florida',
+    'PR波多黎各区': 'pr_puerto_rico',
     'Ground项目部': 'ground',
   };
 
@@ -217,6 +223,7 @@ module.exports = async (req, res) => {
           hostname: 'open.feishu.cn',
           path: '/open-apis/authen/v1/oidc/access_token',
           method: 'POST',
+          timeout: 5000,
           headers: {
             Authorization: `Bearer ${appToken}`,
             'Content-Type': 'application/json',
@@ -234,6 +241,7 @@ module.exports = async (req, res) => {
         }
       );
       r.on('error', reject);
+      r.on('timeout', () => { r.destroy(); reject(new Error('Feishu token exchange timeout (5s)')); });
       r.write(body);
       r.end();
     });
